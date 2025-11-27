@@ -107,6 +107,8 @@ const UserRoutinesCard = ({ user }: UserRoutinesCardProps) => {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["goals", sedeId] });
+      queryClient.invalidateQueries({ queryKey: ["leaderboard-users"] });
+      queryClient.invalidateQueries({ queryKey: ["leaderboard-sedes"] });
     },
   });
 

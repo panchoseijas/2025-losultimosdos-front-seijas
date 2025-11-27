@@ -76,6 +76,8 @@ export const useEnrollClass = (userId: string, onSuccess?: () => void) => {
       queryClient.invalidateQueries({ queryKey: ["userClasses", userId] });
       queryClient.invalidateQueries({ queryKey: ["classes"] });
       queryClient.invalidateQueries({ queryKey: ["goals", selectedSede.id] });
+      queryClient.invalidateQueries({ queryKey: ["leaderboard-users"] });
+      queryClient.invalidateQueries({ queryKey: ["leaderboard-sedes"] });
     },
   });
 };
@@ -145,6 +147,8 @@ export const useUnenrollClass = (userId: string) => {
       queryClient.invalidateQueries({ queryKey: ["userClasses", userId] });
       queryClient.invalidateQueries({ queryKey: ["classes"] });
       queryClient.invalidateQueries({ queryKey: ["goals", selectedSede.id] });
+      queryClient.invalidateQueries({ queryKey: ["leaderboard-users"] });
+      queryClient.invalidateQueries({ queryKey: ["leaderboard-sedes"] });
     },
   });
 };

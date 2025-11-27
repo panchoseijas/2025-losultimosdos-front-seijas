@@ -56,6 +56,8 @@ const AvailableClassesModal = ({
         queryClient.setQueryData(["routines"], context.prevRoutines);
       }
       toast.error("Error asignando la rutina", { id: "assign-routine" });
+      queryClient.invalidateQueries({ queryKey: ["leaderboard-users"] });
+      queryClient.invalidateQueries({ queryKey: ["leaderboard-sedes"] });
     },
   });
 
