@@ -24,6 +24,7 @@ import { Switch } from "../ui/switch";
 import { toast } from "react-hot-toast";
 import { ApiValidationError } from "@/services/api.service";
 import { useStore } from "@/store/useStore";
+import { useQueryClient } from "@tanstack/react-query";
 
 const classFormSchema = z.object({
   id: z.number(),
@@ -72,6 +73,7 @@ export const ClassForm = ({
 }: ClassFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { selectedSede } = useStore();
+  const queryClient = useQueryClient();
 
   const form = useForm<ClassFormValues>({
     resolver: zodResolver(classFormSchema),
@@ -97,6 +99,7 @@ export const ClassForm = ({
         isEdit ? "Clase editada correctamente" : "Clase creada correctamente",
         { id: "create-class" }
       );
+      queryClient.invalidateQueries({ queryKey: ["classes", selectedSede.id] });
     } catch (error) {
       console.error(error);
       if (error instanceof ApiValidationError) {
