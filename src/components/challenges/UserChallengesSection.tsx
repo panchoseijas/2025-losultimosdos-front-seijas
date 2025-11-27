@@ -80,39 +80,9 @@ function ChallengeItem({
 }
 
 export function UserChallengesSection() {
-  // 1) Obtener nivel del usuario
-  const { totalPoints } = useMyGamification();
+  // All hooks must be called unconditionally at the top
+  const { totalPoints, isLoading: loadingGamification } = useMyGamification();
   const { level: userLevel } = getLevelForPoints(totalPoints);
-
-  // 2) Si es nivel < 3 → mostrar CARD bloqueada
-  if (userLevel.level < 3) {
-    return (
-      <Card className="relative overflow-hidden border-red-400 shadow-lg">
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-
-        <CardHeader className="relative z-10 flex flex-col items-center text-center">
-          <Lock className="h-12 w-12 text-red-400 mb-3" /> {/* 🔐 GRAN CANDADO */}
-
-          <CardTitle className="text-xl font-bold text-white">
-            Desafíos bloqueados
-          </CardTitle>
-
-          <p className="text-sm text-gray-200 mt-1">
-            Los desafíos especiales se desbloquean al alcanzar el{" "}
-            <span className="font-bold text-yellow-300">Nivel 3</span>.
-          </p>
-
-          <p className="text-xs text-gray-300 mt-1">
-            Seguí entrenando y anotándote a clases para subir de nivel 💪🔥
-          </p>
-        </CardHeader>
-      </Card>
-    );
-  }
-
-  // -----------------------
-  // 🔓 Si el usuario ES nivel 3+, mostrar desafíos reales
-  // -----------------------
 
   const {
     challenges: dailyChallenges,
@@ -125,8 +95,6 @@ export function UserChallengesSection() {
     isLoading: loadingWeekly,
     isFetching: fetchingWeekly,
   } = useChallenges("WEEKLY");
-
-  // (El resto queda igual que antes — calendario, cálculo semanal, etc.)
 
   const today = useMemo(() => new Date(), []);
   const { trainingDays } = useTrainingDays(today);
@@ -150,6 +118,51 @@ export function UserChallengesSection() {
 
   const weeklyText = `Esta semana entrenaste ${weeklyInfo.sessions} día(s).`;
 
+  // Show loading skeleton while gamification data is loading
+  if (loadingGamification) {
+    return (
+      <Card className="relative overflow-hidden">
+        <CardHeader className="space-y-2">
+          <Skeleton className="h-6 w-48" />
+          <Skeleton className="h-4 w-72" />
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-36" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Early return AFTER all hooks have been called
+  if (userLevel.level < 3) {
+    return (
+      <Card className="relative overflow-hidden border-red-400 shadow-lg">
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+
+        <CardHeader className="relative z-10 flex flex-col items-center text-center">
+          <Lock className="h-12 w-12 text-red-400 mb-3" />{" "}
+          <CardTitle className="text-xl font-bold text-white">
+            Desafíos bloqueados
+          </CardTitle>
+          <p className="text-sm text-gray-200 mt-1">
+            Los desafíos especiales se desbloquean al alcanzar el{" "}
+            <span className="font-bold text-yellow-300">Nivel 3</span>.
+          </p>
+          <p className="text-xs text-gray-300 mt-1">
+            Seguí entrenando y anotándote a clases para subir de nivel 💪🔥
+          </p>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   return (
     <Card className="relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none opacity-50 dark:opacity-30 bg-[radial-gradient(circle_at_top,_#22c55e15,_transparent_60%),_radial-gradient(circle_at_bottom,_#6366f115,_transparent_60%)]" />
@@ -157,7 +170,8 @@ export function UserChallengesSection() {
       <CardHeader className="relative space-y-1">
         <CardTitle className="text-xl font-bold">Desafíos especiales</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Tus desafíos diarios y semanales se actualizan automáticamente según tu actividad.
+          Tus desafíos diarios y semanales se actualizan automáticamente según
+          tu actividad.
         </p>
       </CardHeader>
 
@@ -192,7 +206,6 @@ export function UserChallengesSection() {
           )}
         </section>
 
-        {/* Desafíos semanales */}
         <section>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold">Desafíos semanales</h3>
