@@ -9,14 +9,11 @@ import { toast } from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
 const CreateRoutine = () => {
-  const { getToken } = useAuth();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
   const onCreate = async (values: any) => {
-    const token = await getToken();
-    if (!token) return;
-    await RoutineService.createRoutine(values, values.exercises, token);
+    await RoutineService.createRoutine(values, values.exercises);
     queryClient.refetchQueries({ queryKey: ["routines"] });
     toast.success("Rutina creada correctamente");
     router.refresh();

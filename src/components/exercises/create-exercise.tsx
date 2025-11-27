@@ -5,28 +5,19 @@ import { ExerciseForm, type ExerciseFormValues } from "../forms/exercise";
 import { Button } from "../ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
 import apiService from "@/services/api.service";
-import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 
 const CreateExercise = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { getToken } = useAuth();
   const router = useRouter();
 
   const onCreate = async (values: ExerciseFormValues) => {
-    const token = await getToken();
-    if (!token) return;
-
-    await apiService.post(
-      "/admin/exercises",
-      {
-        name: values.name,
-        videoUrl: values.videoUrl || null,
-        muscleGroupId: values.muscleGroupId,
-        equipment: values.equipment || null,
-      },
-      token
-    );
+    await apiService.post("/admin/exercises", {
+      name: values.name,
+      videoUrl: values.videoUrl || null,
+      muscleGroupId: values.muscleGroupId,
+      equipment: values.equipment || null,
+    });
 
     router.refresh();
     setIsOpen(false);

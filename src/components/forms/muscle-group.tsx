@@ -22,7 +22,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import apiService from "@/services/api.service";
 import { toast } from "react-hot-toast";
-import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const muscleGroupFormSchema = z.object({
@@ -41,7 +40,6 @@ const MuscleGroupForm = ({
   openModal: boolean;
   setOpenModal: (open: boolean) => void;
 }) => {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const form = useForm<MuscleGroupFormValues>({
     resolver: zodResolver(muscleGroupFormSchema),
@@ -53,9 +51,7 @@ const MuscleGroupForm = ({
 
   const { mutate: updateMuscleGroup, isPending } = useMutation({
     mutationFn: async (values: MuscleGroupFormValues) => {
-      const token = await getToken();
-      if (!token) return;
-      await apiService.put(`/admin/muscle-group/${values.id}`, values, token);
+      await apiService.put(`/admin/muscle-group/${values.id}`, values);
     },
     onMutate: async (values) => {
       await queryClient.cancelQueries({ queryKey: ["groups"] });

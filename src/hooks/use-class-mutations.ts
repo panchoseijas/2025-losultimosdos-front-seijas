@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { GymClass } from "@/types";
-import { useAuth } from "@clerk/nextjs";
 import apiService from "@/services/api.service";
 import { toast } from "react-hot-toast";
 import { useStore } from "@/store/useStore";
@@ -11,16 +10,13 @@ interface MutationContext {
 }
 
 export const useEnrollClass = (userId: string, onSuccess?: () => void) => {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const { selectedSede } = useStore();
   return useMutation<GymClass, Error, GymClass, MutationContext>({
     mutationFn: async (classItem: GymClass) => {
-      const token = await getToken();
       const response = await apiService.post<{ class: GymClass }>(
         `/admin/class/${classItem.id}/enroll`,
-        { userId },
-        token!
+        { userId }
       );
       return response.class;
     },
@@ -85,16 +81,13 @@ export const useEnrollClass = (userId: string, onSuccess?: () => void) => {
 };
 
 export const useUnenrollClass = (userId: string) => {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const { selectedSede } = useStore();
   return useMutation<GymClass, Error, GymClass, MutationContext>({
     mutationFn: async (classItem: GymClass) => {
-      const token = await getToken();
       const response = await apiService.post(
         `/admin/class/${classItem.id}/unenroll`,
-        { userId },
-        token!
+        { userId }
       );
       return response.class as GymClass;
     },

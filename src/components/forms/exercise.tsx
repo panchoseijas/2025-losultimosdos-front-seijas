@@ -27,7 +27,6 @@ import {
 
 import { toast } from "react-hot-toast";
 import apiService, { ApiValidationError } from "@/services/api.service";
-import { useAuth } from "@clerk/nextjs";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CreatableCombobox } from "../creatable-combobox";
 import { Skeleton } from "../ui/skeleton";
@@ -59,13 +58,11 @@ export const ExerciseForm: React.FC<ExerciseFormProps> = ({
   isEdit = false,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const { data: groups, isLoading: groupsLoading } = useQuery({
     queryKey: ["groups"],
     queryFn: async () => {
-      const token = await getToken();
-      const response = await apiService.get("/admin/muscle-group", token!);
+      const response = await apiService.get("/admin/muscle-group");
       return response.items as MuscleGroup[];
     },
   });

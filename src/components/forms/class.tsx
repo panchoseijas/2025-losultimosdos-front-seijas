@@ -1,9 +1,11 @@
 "use client";
 
 import * as React from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { Input } from "../ui/input";
@@ -17,12 +19,12 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
+import { Switch } from "../ui/switch";
+
 import { toast } from "react-hot-toast";
-import { useState } from "react";
 import { ApiValidationError } from "@/services/api.service";
 import { useStore } from "@/store/useStore";
 
-// Schema definition moved outside component for better reusability
 const classFormSchema = z.object({
   id: z.number(),
   name: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
@@ -36,7 +38,7 @@ const classFormSchema = z.object({
   }, "La fecha tiene que ser en el futuro"),
   time: z.string().refine(
     (time) => {
-      const [hours, minutes] = time.split(":").map(Number);
+      const [hours] = time.split(":").map(Number);
       return hours >= 8 && hours < 21;
     },
     {
@@ -51,14 +53,15 @@ const classFormSchema = z.object({
   createdById: z.string(),
   users: z.array(z.string()),
   sedeId: z.number(),
+  isBoostedForPoints: z.boolean(),
 });
 
-type ClassFormValues = z.infer<typeof classFormSchema>;
+export type ClassFormValues = z.infer<typeof classFormSchema>;
 
 interface ClassFormProps {
   onSubmit: (values: ClassFormValues) => Promise<void>;
   isLoading?: boolean;
-  defaultValues?: ClassFormValues;
+  defaultValues?: Partial<ClassFormValues>;
   isEdit?: boolean;
 }
 
@@ -73,19 +76,19 @@ export const ClassForm = ({
   const form = useForm<ClassFormValues>({
     resolver: zodResolver(classFormSchema),
     defaultValues: {
-      id: defaultValues?.id || 0,
-      name: defaultValues?.name || "",
-      enrolled: defaultValues?.enrolled || 0,
-      createdById: defaultValues?.createdById || "",
-      users: defaultValues?.users || [],
-      description: defaultValues?.description || "",
-      date: defaultValues?.date ? new Date(defaultValues.date) : undefined,
-      time: defaultValues?.time || "",
-      capacity: defaultValues?.capacity || 1,
-      sedeId: selectedSede.id,
+      id: defaultValues?.id ?? 0,
+      name: defaultValues?.name ?? "",
+      description: defaultValues?.description ?? "",
+      date: defaultValues?.date ? new Date(defaultValues.date) : new Date(),
+      time: defaultValues?.time ?? "",
+      capacity: defaultValues?.capacity ?? 1,
+      enrolled: defaultValues?.enrolled ?? 0,
+      createdById: defaultValues?.createdById ?? "",
+      users: defaultValues?.users ?? [],
+      sedeId: defaultValues?.sedeId ?? selectedSede.id,
+      isBoostedForPoints: defaultValues?.isBoostedForPoints,
     },
   });
-
   const handleSubmit = async (values: ClassFormValues) => {
     try {
       setIsLoading(true);
@@ -117,6 +120,7 @@ export const ClassForm = ({
             onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-6"
           >
+            {/* Nombre */}
             <FormField
               control={form.control}
               name="name"
@@ -140,6 +144,7 @@ export const ClassForm = ({
               )}
             />
 
+            {/* Descripción */}
             <FormField
               control={form.control}
               name="description"
@@ -163,7 +168,9 @@ export const ClassForm = ({
               )}
             />
 
+            {/* Fecha y hora */}
             <div className="grid grid-cols-2 gap-4">
+              {/* Fecha */}
               <FormField
                 control={form.control}
                 name="date"
@@ -188,6 +195,7 @@ export const ClassForm = ({
                 )}
               />
 
+              {/* Hora */}
               <FormField
                 control={form.control}
                 name="time"
@@ -213,6 +221,7 @@ export const ClassForm = ({
               />
             </div>
 
+            {/* Capacidad */}
             <FormField
               control={form.control}
               name="capacity"
@@ -245,14 +254,45 @@ export const ClassForm = ({
               )}
             />
 
+            <FormField
+              control={form.control}
+              name="isBoostedForPoints"
+              render={({ field }) => (
+                <FormItem className="flex items-center justify-between rounded-md border p-3">
+                  <div className="space-y-1">
+                    <FormLabel>Clase boosteada</FormLabel>
+                    <FormDescription>Resalta esta clase</FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Submit */}
             <Button
               type="submit"
               disabled={isLoading || !form.formState.isDirty}
               className="w-full"
-              aria-label={isLoading ? "Creando clase..." : "Crear clase"}
+              aria-label={
+                isLoading
+                  ? isEdit
+                    ? "Editando clase..."
+                    : "Creando clase..."
+                  : isEdit
+                  ? "Editar clase"
+                  : "Crear clase"
+              }
             >
               {isLoading
-                ? "Creando clase..."
+                ? isEdit
+                  ? "Editando clase..."
+                  : "Creando clase..."
                 : isEdit
                 ? "Editar clase"
                 : "Crear clase"}

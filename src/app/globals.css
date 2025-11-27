@@ -220,3 +220,43 @@
 .existing-sede-marker {
   filter: hue-rotate(220deg) saturate(1.2);
 }
+
+/* Boosted class row multicolor border */
+.boosted-row {
+  border-radius: 0.5rem;
+  box-shadow: inset 2px 0 0 0 #f59e0b, inset -2px 0 0 0 #3b82f6,
+    inset 0 2px 0 0 #ef4444, inset 0 -2px 0 0 #10b981;
+  animation: boosted-glow 2s ease-in-out infinite;
+}
+
+.boosted-row td:first-child {
+  border-top-left-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
+  box-shadow: inset 3px 0 0 0 #f59e0b;
+}
+
+.boosted-row td:last-child {
+  border-top-right-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+  box-shadow: inset -3px 0 0 0 #8b5cf6;
+}
+
+@keyframes boosted-glow {
+  0%,
+  100% {
+    box-shadow: inset 2px 0 0 0 #f59e0b, inset -2px 0 0 0 #3b82f6,
+      inset 0 2px 0 0 #ef4444, inset 0 -2px 0 0 #10b981;
+  }
+  25% {
+    box-shadow: inset 2px 0 0 0 #ef4444, inset -2px 0 0 0 #10b981,
+      inset 0 2px 0 0 #ec4899, inset 0 -2px 0 0 #f59e0b;
+  }
+  50% {
+    box-shadow: inset 2px 0 0 0 #ec4899, inset -2px 0 0 0 #f59e0b,
+      inset 0 2px 0 0 #8b5cf6, inset 0 -2px 0 0 #ef4444;
+  }
+  75% {
+    box-shadow: inset 2px 0 0 0 #8b5cf6, inset -2px 0 0 0 #ef4444,
+      inset 0 2px 0 0 #3b82f6, inset 0 -2px 0 0 #ec4899;
+  }
+}

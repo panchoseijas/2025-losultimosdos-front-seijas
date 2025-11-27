@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@clerk/clerk-react";
 import toast from "react-hot-toast";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -40,7 +39,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const ApiKeyManager = () => {
-  const { getToken } = useAuth();
   const [apiKey, setApiKey] = useState<ApiKey | null>(null);
   const [loading, setLoading] = useState(true);
   const [showKey, setShowKey] = useState(false);
@@ -49,10 +47,7 @@ export const ApiKeyManager = () => {
   useEffect(() => {
     const fetchApiKey = async () => {
       try {
-        const token = await getToken();
-        if (!token) return;
-
-        const key = await apiKeyService.getApiKey(token);
+        const key = await apiKeyService.getApiKey();
         setApiKey(key);
       } catch (error: any) {
         console.error("Error al obtener la API key:", error);
@@ -66,18 +61,12 @@ export const ApiKeyManager = () => {
     };
 
     fetchApiKey();
-  }, [getToken]);
+  }, []);
 
   const handleGenerateKey = async () => {
     setProcessing(true);
     try {
-      const token = await getToken();
-      if (!token) {
-        toast.error("Token de autenticación no encontrado");
-        return;
-      }
-
-      const newKey = await apiKeyService.generateApiKey(token);
+      const newKey = await apiKeyService.generateApiKey();
       setApiKey(newKey);
       toast.success("API key generada exitosamente");
     } catch (error: any) {
@@ -96,13 +85,7 @@ export const ApiKeyManager = () => {
 
     setProcessing(true);
     try {
-      const token = await getToken();
-      if (!token) {
-        toast.error("Token de autenticación no encontrado");
-        return;
-      }
-
-      const newKey = await apiKeyService.regenerateApiKey(apiKey.id, token);
+      const newKey = await apiKeyService.regenerateApiKey(apiKey.id);
       setApiKey(newKey);
       toast.success("API key regenerada exitosamente");
       setShowKey(true);
@@ -124,16 +107,9 @@ export const ApiKeyManager = () => {
 
     setProcessing(true);
     try {
-      const token = await getToken();
-      if (!token) {
-        toast.error("Token de autenticación no encontrado");
-        return;
-      }
-
       const updatedKey = await apiKeyService.toggleApiKeyStatus(
         apiKey.id,
-        !apiKey.isActive,
-        token
+        !apiKey.isActive
       );
       setApiKey(updatedKey);
       toast.success(

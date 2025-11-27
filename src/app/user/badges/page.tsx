@@ -18,14 +18,13 @@ import { Badge as UiBadge } from "@/components/ui/badge";
 import { NewBadgeModal } from "@/components/badges/NewBadgeModal";
 
 export default function UserBadgesPage() {
-  const { getToken, userId } = useAuth();
+  const { userId } = useAuth();
 
   const { data: badges = [], isLoading } = useQuery<UserBadgeStatus[]>({
     queryKey: ["userBadges", userId],
     enabled: !!userId,
     queryFn: async () => {
-      const token = await getToken();
-      return BadgeService.getUserBadges(token);
+      return BadgeService.getUserBadges();
     },
   });
 

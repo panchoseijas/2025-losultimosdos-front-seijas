@@ -3,19 +3,14 @@ import { useAuth } from "@clerk/nextjs";
 import userService from "@/services/user.service";
 
 export const useUsers = () => {
-  const { isLoaded, getToken } = useAuth();
+  const { isLoaded } = useAuth();
 
   return useQuery({
     queryKey: ["users"],
     queryFn: async () => {
-      const token = await getToken();
-      if (!token) {
-        throw new Error("No authentication token available");
-      }
-
-      const data = await userService.getAllUsers(token);
+      const data = await userService.getAllUsers();
       return data;
     },
-    enabled: isLoaded, // Only run query when auth is loaded
+    enabled: isLoaded,
   });
 };

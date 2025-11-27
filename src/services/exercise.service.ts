@@ -3,33 +3,16 @@ import { Exercise } from "@/types";
 
 class ExerciseService {
   private readonly apiService = apiService;
-  async createExercise(exercise: Omit<Exercise, "id">, token: string | null) {
-    if (!token) {
-      throw new Error("No authentication token available");
-    }
-    await this.apiService.post("/admin/exercises", exercise, token);
+  async createExercise(exercise: Omit<Exercise, "id">) {
+    await this.apiService.post("/admin/exercises", exercise);
     return true;
   }
-  async updateExercise(
-    exerciseId: number,
-    exercise: Omit<Exercise, "id">,
-    token: string | null
-  ) {
-    if (!token) {
-      throw new Error("No authentication token available");
-    }
-    await this.apiService.put(
-      `/admin/exercises/${exerciseId}`,
-      exercise,
-      token
-    );
+  async updateExercise(exerciseId: number, exercise: Omit<Exercise, "id">) {
+    await this.apiService.put(`/admin/exercises/${exerciseId}`, exercise);
     return true;
   }
-  async deleteExercise(exerciseId: number, token: string | null) {
-    if (!token) {
-      throw new Error("No authentication token available");
-    }
-    await this.apiService.delete(`/admin/exercises/${exerciseId}`, token);
+  async deleteExercise(exerciseId: number) {
+    await this.apiService.delete(`/admin/exercises/${exerciseId}`);
     return true;
   }
   async getAllExercises() {

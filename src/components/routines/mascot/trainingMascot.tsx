@@ -11,9 +11,6 @@ export function TrainingMascot({ visible = true }: TrainingMascotProps) {
   const [position, setPosition] = useState({ top: 55, left: 50 });
   const [isDesktop, setIsDesktop] = useState(true);
 
-  // -----------------------------------
-  // 🦍 SONIDO
-  // -----------------------------------
   const playSound = () => {
     const audio = new Audio("/mono.mp3");
     audio.volume = 0.8;
@@ -21,9 +18,6 @@ export function TrainingMascot({ visible = true }: TrainingMascotProps) {
     audio.play();
   };
 
-  // -----------------------------------
-  // 📌 DETECTOR DE INACTIVIDAD (1 MIN)
-  // -----------------------------------
   useEffect(() => {
     if (!visible) return;
 
@@ -32,8 +26,8 @@ export function TrainingMascot({ visible = true }: TrainingMascotProps) {
     const resetTimer = () => {
       clearTimeout(timer);
       timer = setTimeout(() => {
-        playSound();   // ← hace ruido después de 1 min sin mover el mouse
-      }, 60000);       // 60.000 ms = 1 minuto
+        playSound();
+      }, 60000);
     };
 
     resetTimer();
@@ -45,10 +39,6 @@ export function TrainingMascot({ visible = true }: TrainingMascotProps) {
       clearTimeout(timer);
     };
   }, [visible]);
-
-  // -----------------------------------
-  // MISC
-  // -----------------------------------
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -69,21 +59,43 @@ export function TrainingMascot({ visible = true }: TrainingMascotProps) {
     return () => clearInterval(id);
   }, [visible, isDesktop]);
 
-  function randomBetween(min: number, max: number) {
+  const randomBetween = (min: number, max: number) => {
     return Math.random() * (max - min) + min;
-  }
+  };
 
-  function moveMascot() {
+  const moveMascot = () => {
     setPosition({
       top: randomBetween(30, 70),
       left: randomBetween(25, 75),
     });
+  };
+
+  if (!visible) return null;
+
+  // Mobile: static mascot in corner
+  if (!isDesktop) {
+    return (
+      <div
+        className="pointer-events-none absolute top-2 right-2 z-30"
+        aria-hidden="true"
+      >
+        <Image
+          src="/gorila-legendario.png"
+          alt="Gorila legendario"
+          width={80}
+          height={80}
+          className="object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.6)] opacity-80"
+        />
+      </div>
+    );
   }
 
-  if (!visible || !isDesktop) return null;
-
+  // Desktop: floating mascot
   return (
-    <div className="pointer-events-none absolute inset-0 z-30" aria-hidden="true">
+    <div
+      className="pointer-events-none absolute inset-0 z-30"
+      aria-hidden="true"
+    >
       <div
         className="
           pointer-events-auto absolute

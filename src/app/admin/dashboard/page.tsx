@@ -14,7 +14,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useStore } from "@/store/useStore";
 import userService from "@/services/user.service";
-import { useAuth } from "@clerk/nextjs";
 
 type ViewKey = "members" | "classes" | "hours" | "routines";
 
@@ -23,7 +22,6 @@ const AdminPage = () => {
   const searchParams = useSearchParams();
   const view = searchParams.get("view") as ViewKey;
   const { selectedSede } = useStore();
-  const { getToken } = useAuth();
   useEffect(() => {
     if (!searchParams.get("view")) {
       const params = new URLSearchParams(searchParams);
@@ -101,11 +99,7 @@ const AdminPage = () => {
   const { data: users, isLoading: isLoadingUsers } = useQuery({
     queryKey: ["users-by-sede", selectedSede.id],
     queryFn: async () => {
-      const token = await getToken();
-      if (!token) {
-        throw new Error("No authentication token available");
-      }
-      const data = await userService.getAllUsersBySede(token, selectedSede.id);
+      const data = await userService.getAllUsersBySede(selectedSede.id);
       return data;
     },
   });

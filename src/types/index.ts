@@ -9,6 +9,8 @@ export interface GymClass {
   sedeId: number;
   createdById: string;
   users: string[];
+  isBoostedForPoints: boolean;
+
 }
 
 export interface User {

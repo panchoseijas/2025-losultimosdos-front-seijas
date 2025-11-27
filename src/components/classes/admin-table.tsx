@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { type ColumnDef } from "@tanstack/react-table";
-import { useAuth } from "@clerk/nextjs";
 
 import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
@@ -21,11 +20,13 @@ import {
   CardContent,
   CardAction,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 import apiService from "@/services/api.service";
 import { ClassForm } from "@/components/forms/class";
 import { type GymClass } from "@/types";
 import { columns } from "@/components/classes/columns";
+import { cn } from "@/lib/utils";
 
 const useIsMobile = (query = "(max-width: 640px)") => {
   const [isMobile, setIsMobile] = useState(false);
@@ -50,15 +51,12 @@ const AdminTable = ({ classes }: AdminTableProps) => {
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const isMobile = useIsMobile();
-  const { getToken } = useAuth();
   const router = useRouter();
 
   const onDelete = async (id: number) => {
     try {
       setDeletingId(id);
-      const token = await getToken();
-      if (!token) return;
-      await apiService.delete(`/admin/class/${id}`, token!);
+      await apiService.delete(`/admin/class/${id}`);
       router.refresh();
     } finally {
       setDeletingId(null);
@@ -66,9 +64,8 @@ const AdminTable = ({ classes }: AdminTableProps) => {
   };
 
   const onEdit = async (values: GymClass) => {
-    const token = await getToken();
-    if (!token) return;
-    await apiService.put(`/admin/class/${values.id}`, { ...values }, token!);
+    // Enviamos todo el objeto; el back valida con Zod y usa lo que necesita
+    await apiService.put(`/admin/class/${values.id}`, { ...values });
     router.refresh();
     setSelectedClass(null);
   };
@@ -97,20 +94,30 @@ const AdminTable = ({ classes }: AdminTableProps) => {
     },
   ];
 
+  const getRowClassName = (gymClass: GymClass): string => {
+    if (gymClass.isBoostedForPoints) {
+      return "boosted-row";
+    }
+    return "";
+  };
+
   return (
     <Sheet
       open={!!selectedClass}
       onOpenChange={(open) => !open && setSelectedClass(null)}
     >
+      {/* Desktop */}
       <div className="hidden sm:block">
         <DataTable
           columns={columns}
           data={classes}
           extraColumns={adminColumns}
           headerClassName="last:items-center last:justify-end last:w-min last:w-[100px] last:min-w-[100px]"
+          getRowClassName={getRowClassName}
         />
       </div>
 
+      {/* Mobile */}
       <div className="sm:hidden space-y-3">
         {classes.length === 0 ? (
           <Card>
@@ -122,9 +129,17 @@ const AdminTable = ({ classes }: AdminTableProps) => {
           </Card>
         ) : (
           classes.map((cls) => (
-            <Card key={cls.id} className="overflow-hidden">
+            <Card
+              key={cls.id}
+              className={cn("overflow-hidden", getRowClassName(cls))}
+            >
               <CardHeader className="pb-2">
-                <CardTitle className="text-base">{cls.name}</CardTitle>
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <CardTitle className="text-base">{cls.name}</CardTitle>
+                  </div>
+                </div>
+
                 <CardAction className="mt-2 flex gap-2">
                   <SheetTrigger onClick={() => setSelectedClass(cls)} asChild>
                     <Button size="sm" variant="outline" className="flex-1">
@@ -167,14 +182,13 @@ const AdminTable = ({ classes }: AdminTableProps) => {
                   <div className="text-gray-900 dark:text-gray-100 text-right">
                     {typeof cls.capacity === "number" ? cls.capacity : "-"}
                   </div>
-                                    <div className="text-gray-500 dark:text-gray-400">
+
+                  <div className="text-gray-500 dark:text-gray-400">
                     Inscriptos
                   </div>
                   <div className="text-gray-900 dark:text-gray-100 text-right">
                     {typeof cls.enrolled === "number" ? cls.enrolled : "-"}
                   </div>
-                  
-
                 </div>
               </CardContent>
             </Card>
@@ -182,6 +196,7 @@ const AdminTable = ({ classes }: AdminTableProps) => {
         )}
       </div>
 
+      {/* Sheet para editar */}
       <SheetContent
         side={isMobile ? "bottom" : "right"}
         className={isMobile ? "h-[90vh] w-full p-4" : "sm:w-[540px]"}

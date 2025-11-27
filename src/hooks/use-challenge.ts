@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import apiService from "@/services/api.service";
 import { useStore } from "@/store/useStore";
 import { Challenge, ChallengeFrequency } from "@/types/index";
-import { useAuth } from "@clerk/nextjs";
 
 type ChallengeResponse = {
   challenges: Challenge[];
@@ -14,7 +13,6 @@ type ChallengeResponse = {
 export function useChallenges(frequency: ChallengeFrequency) {
   const { selectedSede } = useStore();
   const sedeId = selectedSede?.id;
-  const { getToken } = useAuth();
 
   const enabled = !!sedeId;
 
@@ -23,12 +21,10 @@ export function useChallenges(frequency: ChallengeFrequency) {
     queryFn: async () => {
       if (!sedeId) throw new Error("Sede no seleccionada");
 
-      const token = await getToken();
       const freqParam = frequency.toLowerCase(); // "daily" | "weekly"
 
       const res = await apiService.get(
-        `/user/challenges?frequency=${freqParam}&sedeId=${sedeId}`,
-        token!
+        `/user/challenges?frequency=${freqParam}&sedeId=${sedeId}`
       );
 
       return res as ChallengeResponse;

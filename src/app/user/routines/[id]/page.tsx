@@ -1,6 +1,5 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +12,6 @@ import { use } from "react";
 type Params = Promise<{ id: string }>;
 
 export default function RoutineDetailsPage({ params }: { params: Params }) {
-  const { getToken } = useAuth();
   const id = use(params).id;
   const {
     data: routine,
@@ -22,8 +20,7 @@ export default function RoutineDetailsPage({ params }: { params: Params }) {
   } = useQuery({
     queryKey: ["routine", id],
     queryFn: async () => {
-      const token = await getToken();
-      return routineService.getRoutine(Number(id), token);
+      return routineService.getRoutine(Number(id));
     },
   });
 

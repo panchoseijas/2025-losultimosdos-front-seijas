@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Goal } from "@/types";
-import { useAuth } from "@clerk/nextjs";
 import goalService, {
   CreateGoalDto,
   UpdateGoalDto,
@@ -12,13 +11,11 @@ interface MutationContext {
 }
 
 export const useCreateGoal = (sedeId: number, onSuccess?: () => void) => {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation<Goal, Error, CreateGoalDto, MutationContext>({
     mutationFn: async (goalData: CreateGoalDto) => {
-      const token = await getToken();
-      return await goalService.createGoal(goalData, token!);
+      return await goalService.createGoal(goalData);
     },
 
     onMutate: async () => {
@@ -55,7 +52,6 @@ export const useCreateGoal = (sedeId: number, onSuccess?: () => void) => {
 };
 
 export const useUpdateGoal = (sedeId: number, onSuccess?: () => void) => {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation<
@@ -65,8 +61,7 @@ export const useUpdateGoal = (sedeId: number, onSuccess?: () => void) => {
     MutationContext
   >({
     mutationFn: async ({ id, data }) => {
-      const token = await getToken();
-      return await goalService.updateGoal(id, data, token!);
+      return await goalService.updateGoal(id, data);
     },
 
     onMutate: async () => {
@@ -102,13 +97,11 @@ export const useUpdateGoal = (sedeId: number, onSuccess?: () => void) => {
 };
 
 export const useDeleteGoal = (sedeId: number) => {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation<void, Error, number, MutationContext>({
     mutationFn: async (goalId: number) => {
-      const token = await getToken();
-      return await goalService.deleteGoal(goalId, token!);
+      return await goalService.deleteGoal(goalId);
     },
 
     onMutate: async (goalId) => {

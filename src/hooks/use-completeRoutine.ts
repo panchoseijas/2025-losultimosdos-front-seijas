@@ -7,7 +7,7 @@ import { useStore } from "@/store/useStore";
 import { useEvaluateChallenges } from "@/hooks/use-evaluate-challenge"; // 👈 nuevo import
 
 export function useCompleteRoutine(routineId: number) {
-  const { getToken, userId } = useAuth();
+  const { userId } = useAuth();
   const queryClient = useQueryClient();
   const { selectedSede } = useStore();
   const { mutate: evaluateChallenges } = useEvaluateChallenges(); // 👈 lo usamos luego
@@ -29,12 +29,7 @@ export function useCompleteRoutine(routineId: number) {
           reps: Number(ex.reps),
         }));
 
-      const token = await getToken();
-      return RoutineService.completeRoutine(
-        routineId,
-        cleanPerformances,
-        token!
-      );
+      return RoutineService.completeRoutine(routineId, cleanPerformances);
     },
 
     onSuccess: () => {

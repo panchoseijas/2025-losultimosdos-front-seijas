@@ -4,15 +4,9 @@ import apiService from "./api.service";
 const API_KEY_ENDPOINT = "/api-keys";
 
 class ApiKeyService {
-  // Generate a new API key
-  async generateApiKey(token: string): Promise<ApiKey> {
+  async generateApiKey(): Promise<ApiKey> {
     try {
-      // TODO: Replace with actual backend call when implemented
-      const response = await apiService.post<ApiKey>(
-        API_KEY_ENDPOINT,
-        {},
-        token
-      );
+      const response = await apiService.post<ApiKey>(API_KEY_ENDPOINT, {});
       return response;
     } catch (error) {
       console.error("Error generating API key:", error);
@@ -20,11 +14,9 @@ class ApiKeyService {
     }
   }
 
-  // Get current API key
-  async getApiKey(token: string): Promise<ApiKey | null> {
+  async getApiKey(): Promise<ApiKey | null> {
     try {
-      // TODO: Replace with actual backend call when implemented
-      const response = await apiService.get(API_KEY_ENDPOINT, token);
+      const response = await apiService.get(API_KEY_ENDPOINT);
       return response;
     } catch (error) {
       console.error("Error fetching API key:", error);
@@ -32,14 +24,11 @@ class ApiKeyService {
     }
   }
 
-  // Regenerate an existing API key
-  async regenerateApiKey(keyId: string, token: string): Promise<ApiKey> {
+  async regenerateApiKey(keyId: string): Promise<ApiKey> {
     try {
-      // TODO: Replace with actual backend call when implemented
       const response = await apiService.put<ApiKey>(
         `${API_KEY_ENDPOINT}/${keyId}/regenerate`,
-        {},
-        token
+        {} as Record<string, unknown>
       );
       return response;
     } catch (error) {
@@ -48,18 +37,11 @@ class ApiKeyService {
     }
   }
 
-  // Disable/Enable an API key
-  async toggleApiKeyStatus(
-    keyId: string,
-    isActive: boolean,
-    token: string
-  ): Promise<ApiKey> {
+  async toggleApiKeyStatus(keyId: string, isActive: boolean): Promise<ApiKey> {
     try {
-      // TODO: Replace with actual backend call when implemented
       const response = await apiService.put<ApiKey>(
         `${API_KEY_ENDPOINT}/${keyId}`,
-        { isActive },
-        token
+        { isActive }
       );
       return response;
     } catch (error) {
@@ -68,11 +50,9 @@ class ApiKeyService {
     }
   }
 
-  // Delete an API key
-  async deleteApiKey(keyId: string, token: string): Promise<void> {
+  async deleteApiKey(keyId: string): Promise<void> {
     try {
-      // TODO: Replace with actual backend call when implemented
-      await apiService.delete(`${API_KEY_ENDPOINT}/${keyId}`, token);
+      await apiService.delete(`${API_KEY_ENDPOINT}/${keyId}`);
     } catch (error) {
       console.error("Error deleting API key:", error);
       throw error;

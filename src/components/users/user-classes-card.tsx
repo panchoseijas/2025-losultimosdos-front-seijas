@@ -46,17 +46,14 @@ const useIsMobile = (query = "(max-width: 640px)") => {
 const UserClassesCard = ({ user }: UserClassesCardProps) => {
   const { id: userId, sedeId } = user;
   const isMobile = useIsMobile();
-  const { getToken } = useAuth();
   const [unenrollingClassId, setUnenrollingClassId] = useState<number | null>(
     null
   );
   const { data: userClasses = [], isLoading: isLoadingClasses } = useQuery({
     queryKey: ["userClasses", user.id],
     queryFn: async () => {
-      const token = await getToken();
       const response = await apiService.get(
-        `/admin/users/${userId}/classes?sedeId=${sedeId}`,
-        token!
+        `/admin/users/${userId}/classes?sedeId=${sedeId}`
       );
       return response.classes || [];
     },

@@ -1,8 +1,12 @@
+// "@/schemas/class-form-schema.ts" (el que me pasaste)
+
 import z from "zod";
 
 export const classFormSchema = z.object({
   name: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
-  description: z.string().min(10, "La descripcion debe tener al menos 10 caracteres"),
+  description: z
+    .string()
+    .min(10, "La descripcion debe tener al menos 10 caracteres"),
   date: z.string().refine((date) => {
     const selectedDate = new Date(date);
     const today = new Date();
@@ -14,6 +18,7 @@ export const classFormSchema = z.object({
     .number()
     .min(1, "La capacidad debe ser al menos 1")
     .max(50, "La capacidad no puede ser mayor a 50"),
+  isBoostedForPoints: z.boolean().optional().default(false),
 });
 
 export type ClassFormValues = z.infer<typeof classFormSchema>;

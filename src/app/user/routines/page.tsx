@@ -6,7 +6,7 @@ import RoutineService from "@/services/routine.service";
 import { useQuery } from "@tanstack/react-query";
 import { DataTable } from "@/components/ui/data-table";
 import TableSkeleton from "@/components/skeletons/table-skeleton";
-import { useAuth, useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { columns } from "@/components/routines/columns";
 import { ICONS } from "@/components/forms/routine";
@@ -14,15 +14,11 @@ import { Routine } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
 
 const RoutinesPage = () => {
-  const { getToken } = useAuth();
   const { user } = useUser();
   const { data: routines, isLoading } = useQuery({
     queryKey: ["userRoutines"],
     queryFn: async () => {
-      const routines = await RoutineService.getUserRoutines(
-        user?.id as string,
-        await getToken()
-      );
+      const routines = await RoutineService.getUserRoutines(user?.id as string);
       return routines;
     },
   });

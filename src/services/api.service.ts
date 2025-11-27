@@ -1,3 +1,5 @@
+type TokenGetter = () => Promise<string | null>;
+
 interface ValidationDetail {
   path: string;
   message: string;
@@ -16,14 +18,29 @@ export class ApiValidationError extends Error {
 
 export class ApiService {
   private baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  private tokenGetter: TokenGetter | null = null;
+
+  setTokenGetter(getter: TokenGetter): void {
+    this.tokenGetter = getter;
+  }
+
+  private async getAuthToken(): Promise<string> {
+    if (this.tokenGetter) {
+      const token = await this.tokenGetter();
+      if (token) return token;
+    }
+
+    throw new Error("No authentication token available");
+  }
+
   async post<T = any>(
     endpoint: string,
-    body: Record<string, unknown>,
-    token: string
+    body: Record<string, unknown>
   ): Promise<T> {
+    const authToken = await this.getAuthToken();
     const headers = {
       "Content-Type": "application/json",
-      Authorization: "Bearer " + token,
+      Authorization: "Bearer " + authToken,
     };
 
     const response = await fetch(this.baseUrl + endpoint, {
@@ -43,9 +60,10 @@ export class ApiService {
     return data;
   }
 
-  async get(endpoint: string, token?: string) {
+  async get<T = any>(endpoint: string): Promise<T> {
+    const authToken = await this.getAuthToken();
     const headers = {
-      Authorization: token ? "Bearer " + token : "",
+      Authorization: "Bearer " + authToken,
     };
     const normalizedEndpoint = endpoint.startsWith("/")
       ? endpoint
@@ -68,12 +86,12 @@ export class ApiService {
   async put<T = any>(
     endpoint: string,
     body: Record<string, unknown>,
-    token: string,
     additionalHeaders?: Record<string, string>
   ): Promise<T> {
+    const authToken = await this.getAuthToken();
     const headers = {
       "Content-Type": "application/json",
-      Authorization: "Bearer " + token,
+      Authorization: "Bearer " + authToken,
       "ngrok-skip-browser-warning": "1",
       ...additionalHeaders,
     };
@@ -96,10 +114,11 @@ export class ApiService {
     return data;
   }
 
-  async delete(endpoint: string, token: string) {
+  async delete(endpoint: string) {
+    const authToken = await this.getAuthToken();
     const headers = {
       "Content-Type": "application/json",
-      Authorization: "Bearer " + token,
+      Authorization: "Bearer " + authToken,
       "ngrok-skip-browser-warning": "1",
     };
     const response = await fetch(this.baseUrl + endpoint, {

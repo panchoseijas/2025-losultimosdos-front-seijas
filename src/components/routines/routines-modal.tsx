@@ -27,13 +27,11 @@ const AvailableClassesModal = ({
   userId,
 }: AvailableClassesModalProps) => {
   const [open, setOpen] = useState(false);
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   const { mutate: assignRoutine, isPending: isAssigning } = useMutation({
     mutationFn: async (routine: Routine) => {
-      const token = await getToken();
-      await routineService.assignRoutine(userId, routine.id, token!);
+      await routineService.assignRoutine(userId, routine.id);
     },
     onMutate: async (routine) => {
       await queryClient.cancelQueries({ queryKey: ["routines"] });

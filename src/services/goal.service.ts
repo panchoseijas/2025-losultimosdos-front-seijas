@@ -22,44 +22,35 @@ export interface UpdateGoalDto {
 }
 
 class GoalService {
-  async getGoalsBySede(sedeId: number, token?: string): Promise<Goal[]> {
-    const response = await apiService.get(
-      `/admin/goals?sedeId=${sedeId}`,
-      token
-    );
+  async getGoalsBySede(sedeId: number): Promise<Goal[]> {
+    const response = await apiService.get(`/admin/goals?sedeId=${sedeId}`);
     console.log("response", response);
     return response.goals as Goal[];
   }
 
-  async getGoalById(id: number, token?: string): Promise<Goal> {
-    const response = await apiService.get(`/admin/goals/${id}`, token);
+  async getGoalById(id: number): Promise<Goal> {
+    const response = await apiService.get(`/admin/goals/${id}`);
     return response.goal;
   }
 
-  async createGoal(goalData: CreateGoalDto, token: string): Promise<Goal> {
+  async createGoal(goalData: CreateGoalDto): Promise<Goal> {
     const response = await apiService.post<Goal>(
       "/admin/goals",
-      goalData as unknown as Record<string, unknown>,
-      token
+      goalData as unknown as Record<string, unknown>
     );
     return response;
   }
 
-  async updateGoal(
-    id: number,
-    goalData: UpdateGoalDto,
-    token: string
-  ): Promise<Goal> {
+  async updateGoal(id: number, goalData: UpdateGoalDto): Promise<Goal> {
     const response = await apiService.put<Goal>(
       `/admin/goals/${id}`,
-      goalData as unknown as Record<string, unknown>,
-      token
+      goalData as unknown as Record<string, unknown>
     );
     return response;
   }
 
-  async deleteGoal(id: number, token: string): Promise<void> {
-    await apiService.delete(`/admin/goals/${id}`, token);
+  async deleteGoal(id: number): Promise<void> {
+    await apiService.delete(`/admin/goals/${id}`);
   }
 }
 

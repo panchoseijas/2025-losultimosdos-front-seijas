@@ -1,4 +1,3 @@
-// components/MascotLauncher.tsx
 "use client";
 
 import Image from "next/image";
@@ -19,8 +18,7 @@ export function MascotLauncher({ level, onClick }: MascotLauncherProps) {
         "fixed bottom-6 right-6 flex items-center gap-4 rounded-full pl-3 pr-5 py-2",
         "bg-slate-900/90 backdrop-blur-xl border border-slate-700 shadow-xl",
         "hover:shadow-2xl hover:-translate-y-1 transition-all duration-300",
-        isMax &&
-          "border-violet-400/80 shadow-[0_0_35px_rgba(167,139,250,0.75)]"
+        isMax && "border-violet-400/80 shadow-[0_0_35px_rgba(167,139,250,0.75)]"
       )}
     >
       {/* Avatar grande */}

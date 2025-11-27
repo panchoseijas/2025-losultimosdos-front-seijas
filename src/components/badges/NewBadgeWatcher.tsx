@@ -9,14 +9,13 @@ import { UserBadgeStatus } from "@/types";
 import { NewBadgeModal } from "@/components/badges/NewBadgeModal";
 
 export function NewBadgeWatcher() {
-  const { userId, getToken } = useAuth();
+  const { userId } = useAuth();
 
   const { data: badges = [] } = useQuery<UserBadgeStatus[]>({
     queryKey: ["userBadges", userId],
     enabled: !!userId,
     queryFn: async () => {
-      const token = await getToken();
-      return BadgeService.getUserBadges(token);
+      return BadgeService.getUserBadges();
     },
   });
 

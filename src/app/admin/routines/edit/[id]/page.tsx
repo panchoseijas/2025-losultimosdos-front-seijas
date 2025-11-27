@@ -5,7 +5,6 @@ import { Routine, RoutineExercise } from "@/types";
 import { RoutineFormValues } from "@/components/forms/routine";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { useAuth } from "@clerk/nextjs";
 import RoutineSkeleton from "@/components/skeletons/routine-skeleton";
 import { toast } from "react-hot-toast";
 import { useStore } from "@/store/useStore";
@@ -40,7 +39,6 @@ const transformRoutineData = (routineData: any) => {
 };
 
 const EditRoutinePage = () => {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const router = useRouter();
   const { id } = useParams();
@@ -51,16 +49,13 @@ const EditRoutinePage = () => {
   >({
     queryKey: ["routine", id],
     queryFn: async () => {
-      const token = await getToken();
-      const response = await routineService.getRoutine(idNumber, token);
+      const response = await routineService.getRoutine(idNumber);
       return response;
     },
   });
 
   const { mutate: updateRoutine, isPending: isUpdating } = useMutation({
     mutationFn: async (values: RoutineFormValues) => {
-      const token = await getToken();
-      if (!token) return;
       const updatedRoutine = await routineService.updateRoutine(
         idNumber,
         {
@@ -80,8 +75,7 @@ const EditRoutinePage = () => {
           sets: exercise.sets,
           reps: exercise.reps,
           restTime: exercise.restTime,
-        })),
-        token
+        }))
       );
       return updatedRoutine;
     },

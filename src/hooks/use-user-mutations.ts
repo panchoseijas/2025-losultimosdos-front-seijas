@@ -1,18 +1,15 @@
 import { User } from "@/types";
-import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import userService from "@/services/user.service";
 import { toast } from "react-hot-toast";
 import { useStore } from "@/store/useStore";
 
 export const useUserRoleMutation = (userId: string) => {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (newRole: string) => {
-      const token = await getToken();
-      return userService.updateUserRole(userId, newRole, token!);
+      return userService.updateUserRole(userId, newRole);
     },
     onMutate: async (newRole) => {
       await queryClient.cancelQueries({ queryKey: ["users", userId] });
@@ -52,13 +49,11 @@ export const useUserRoleMutation = (userId: string) => {
 };
 
 export const useUserPlanMutation = (userId: string) => {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (newPlan: "basic" | "premium") => {
-      const token = await getToken();
-      return userService.updateUserPlan(userId, newPlan, token!);
+      return userService.updateUserPlan(userId, newPlan);
     },
     onMutate: async (newPlan) => {
       await queryClient.cancelQueries({ queryKey: ["users", userId] });
@@ -98,14 +93,12 @@ export const useUserPlanMutation = (userId: string) => {
 };
 
 export const useUserSedeMutation = (userId: string) => {
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
   const { selectedSede } = useStore();
   return useMutation({
     mutationFn: async (newSedeId: number) => {
-      const token = await getToken();
       toast.loading("Actualizando sede...", { id: "update-sede" });
-      return userService.updateUserSede(userId, newSedeId, token!);
+      return userService.updateUserSede(userId, newSedeId);
     },
 
     onSuccess: () => {

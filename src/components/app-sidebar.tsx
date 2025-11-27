@@ -4,13 +4,11 @@ import {
   IconBook,
   IconUsers,
   IconStretching,
-  IconDashboard,
   IconHome,
   IconTarget,
   IconKey,
-  IconArrowDownSquare
 } from "@tabler/icons-react";
-import { Dumbbell } from "lucide-react";
+import { Dumbbell, Trophy, Swords } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
@@ -27,7 +25,6 @@ import {
 import { currentUser } from "@clerk/nextjs/server";
 import { Skeleton } from "./ui/skeleton";
 import { SedesSwitcher } from "./sedes-switcher";
-import { title } from "process";
 
 export async function AppSidebar({
   ...props
@@ -87,7 +84,7 @@ export async function AppSidebar({
       {
         title: "Leaderboard",
         url: "/" + user?.publicMetadata?.role + "/leaderboard",
-        icon: IconDashboard,
+        icon: Trophy,
         roles: ["admin"],
       },
       {
@@ -97,17 +94,17 @@ export async function AppSidebar({
         roles: ["user"],
       },
       {
-        title:"Logros",
+        title: "Logros",
         url: "/" + user?.publicMetadata?.role + "/badges",
-        icon: IconArrowDownSquare,
+        icon: Trophy,
         roles: ["user"],
       },
       {
         title: "Desafíos",
         url: "/" + user?.publicMetadata?.role + "/challenges",
-        icon: IconArrowDownSquare,
+        icon: Swords,
         roles: ["user"],
-      }
+      },
     ],
   };
 

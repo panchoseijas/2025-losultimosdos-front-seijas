@@ -21,22 +21,16 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Target } from "lucide-react";
-import { useAuth } from "@clerk/nextjs";
 
 const GoalsPage = () => {
   const { selectedSede } = useStore();
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [deletingGoalId, setDeletingGoalId] = useState<number | null>(null);
   const deleteGoalMutation = useDeleteGoal(selectedSede.id);
-  const { getToken } = useAuth();
   const { data: goals, isLoading } = useQuery({
     queryKey: ["goals", selectedSede.id],
     queryFn: async () => {
-      const token = await getToken();
-      const response = await goalService.getGoalsBySede(
-        selectedSede.id,
-        token!
-      );
+      const response = await goalService.getGoalsBySede(selectedSede.id);
 
       return response as Goal[];
     },

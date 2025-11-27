@@ -8,7 +8,6 @@ import {
   Plus,
   TrashIcon,
 } from "lucide-react";
-import { useAuth } from "@clerk/nextjs";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -65,7 +64,6 @@ export function CreatableCombobox({
   isLoading = false,
 }: CreatableComboboxProps) {
   const [open, setOpen] = React.useState(false);
-  const { getToken } = useAuth();
 
   const [searchValue, setSearchValue] = React.useState("");
   const router = useRouter();
@@ -80,13 +78,7 @@ export function CreatableCombobox({
   const selectedOption = options.find((option) => option.value === value);
 
   const onCreate = async (values: { name: string }) => {
-    const token = await getToken();
-    if (!token) return;
-    const response = await apiService.post(
-      "/admin/muscle-group",
-      values,
-      token
-    );
+    const response = await apiService.post("/admin/muscle-group", values);
     const muscleGroup = response.muscleGroup;
     queryClient.setQueryData(["groups"], (old: MuscleGroup[]) => [
       ...old,
@@ -100,9 +92,7 @@ export function CreatableCombobox({
   };
 
   const onDelete = async (value: string) => {
-    const token = await getToken();
-    if (!token) return;
-    await apiService.delete(`/admin/muscle-group/${value}`, token);
+    await apiService.delete(`/admin/muscle-group/${value}`);
     queryClient.setQueryData(["groups"], (old: MuscleGroup[]) =>
       old.filter((option) => option.id !== Number(value))
     );

@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { type ColumnDef } from "@tanstack/react-table";
-import { useAuth } from "@clerk/nextjs";
 import { toast } from "react-hot-toast";
 
 import { DataTable } from "@/components/ui/data-table";
@@ -55,15 +54,12 @@ const AdminTable = ({ exercises }: AdminTableProps) => {
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const isMobile = useIsMobile();
-  const { getToken } = useAuth();
   const router = useRouter();
   const queryClient = useQueryClient();
   const onDelete = async (id: number) => {
     try {
       setDeletingId(id);
-      const token = await getToken();
-      if (!token) return;
-      await apiService.delete(`/admin/exercises/${id}`, token);
+      await apiService.delete(`/admin/exercises/${id}`);
       router.refresh();
       toast.success("Ejercicio eliminado correctamente");
     } catch (error) {
@@ -82,19 +78,14 @@ const AdminTable = ({ exercises }: AdminTableProps) => {
   };
 
   const onEdit = async (values: ExerciseFormValues) => {
-    const token = await getToken();
-    if (!token || !values.id) return;
+    if (!values.id) return;
 
-    await apiService.put(
-      `/admin/exercises/${values.id}`,
-      {
-        name: values.name,
-        videoUrl: values.videoUrl || null,
-        equipment: values.equipment || null,
-        muscleGroupId: values.muscleGroupId,
-      },
-      token
-    );
+    await apiService.put(`/admin/exercises/${values.id}`, {
+      name: values.name,
+      videoUrl: values.videoUrl || null,
+      equipment: values.equipment || null,
+      muscleGroupId: values.muscleGroupId,
+    });
 
     queryClient.invalidateQueries({ queryKey: ["exercises"] });
     setSelectedExercise(null);

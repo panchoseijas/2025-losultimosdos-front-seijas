@@ -1,7 +1,6 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
@@ -25,9 +24,9 @@ import toast from "react-hot-toast";
 import routineService, { BestPerformance } from "@/services/routine.service";
 import { useBestPerformances } from "@/hooks/use-best-performance";
 import { useCompleteRoutine } from "@/hooks/use-completeRoutine";
-import { TrainingMascot } from "@/components/routines/mascot/trainingMascot"; // 🐾
-import { useMyGamification } from "@/hooks/use-my-gamification";           // ⭐
-import { getLevelForPoints } from "@/lib/levels";                           // ⭐
+import { TrainingMascot } from "@/components/routines/mascot/trainingMascot";
+import { useMyGamification } from "@/hooks/use-my-gamification";
+import { getLevelForPoints } from "@/lib/levels";
 
 type Params = Promise<{ id: string }>;
 
@@ -48,7 +47,6 @@ function calc1RM(weight: number, reps: number): number {
 }
 
 export default function RoutinePlayPage({ params }: { params: Params }) {
-  const { getToken } = useAuth();
   const router = useRouter();
   const { id } = use(params);
   const routineId = Number(id);
@@ -67,10 +65,8 @@ export default function RoutinePlayPage({ params }: { params: Params }) {
   } = useQuery({
     queryKey: ["routine", routineId],
     queryFn: async () => {
-      const token = await getToken();
       return routineService.getRoutine(
-        Number(routineId),
-        token
+        Number(routineId)
       ) as Promise<RoutineWithExercises>;
     },
   });
@@ -161,7 +157,6 @@ export default function RoutinePlayPage({ params }: { params: Params }) {
 
   return (
     <div className="space-y-6">
-      {/* 🔥 Card de progreso con borde glowing para nivel 4+ */}
       <Card
         className={cn(
           "relative overflow-hidden border bg-background",
@@ -198,9 +193,7 @@ export default function RoutinePlayPage({ params }: { params: Params }) {
         </CardHeader>
       </Card>
 
-      {/* Card de ejercicios con mascota condicional */}
       <Card className="relative overflow-hidden">
-        {/* 🐾 Mascota SOLO si sos nivel 4+ */}
         <TrainingMascot visible={isLegendOrHigher} />
 
         <CardHeader>

@@ -1,4 +1,3 @@
-import { type Icon } from "@tabler/icons-react";
 import Link from "next/link";
 import {
   SidebarGroup,
@@ -13,7 +12,7 @@ export function NavMain({
   items: {
     title: string;
     url: string;
-    icon?: Icon;
+    icon?: React.ElementType;
   }[];
 }) {
   return (

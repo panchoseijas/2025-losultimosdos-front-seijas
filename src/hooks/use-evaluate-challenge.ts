@@ -3,7 +3,6 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import apiService from "@/services/api.service";
-import { useAuth } from "@clerk/nextjs";
 import { useStore } from "@/store/useStore";
 import { toast } from "react-hot-toast";
 
@@ -19,19 +18,13 @@ type EvaluateResponse = {
 };
 
 export function useEvaluateChallenges() {
-  const { getToken } = useAuth();
   const { selectedSede } = useStore();
   const sedeId = selectedSede?.id;
   const queryClient = useQueryClient();
 
   const mutation = useMutation<EvaluateResponse>({
     mutationFn: async () => {
-      const token = await getToken();
-      const res = await apiService.post(
-        "/user/challenges/evaluate",
-        {},
-        token!
-      );
+      const res = await apiService.post("/user/challenges/evaluate", {});
       return res as EvaluateResponse;
     },
     onSuccess: (data) => {

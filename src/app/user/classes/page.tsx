@@ -37,8 +37,8 @@ const UserPage = () => {
     );
   }
 
-  const available = classes.filter((c) => c.users.length < c.capacity);
-  const full = classes.filter((c) => c.users.length >= c.capacity);
+  const available = classes.filter((c) => c.enrolled < c.capacity);
+  const full = classes.filter((c) => c.enrolled >= c.capacity);
 
   return (
     <div className="container mx-auto space-y-4 p-4">
@@ -46,10 +46,7 @@ const UserPage = () => {
         <h1 className="text-lg font-bold">Clases Disponibles</h1>
       </div>
 
-      <UsersClassesTable
-        classes={available}
-        onClassesChanged={refetch}
-      />
+      <UsersClassesTable classes={available} onClassesChanged={refetch} />
 
       {full.length > 0 && <FullClasses fullClasses={full} />}
     </div>

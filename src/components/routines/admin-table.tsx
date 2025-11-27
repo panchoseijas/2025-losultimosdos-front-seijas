@@ -26,7 +26,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@clerk/nextjs";
 import { toast } from "react-hot-toast";
 import routineService from "@/services/routine.service";
 import { useStore } from "@/store/useStore";
@@ -48,7 +47,6 @@ const AdminRoutineTable = ({
 }: AdminRoutineTableProps) => {
   const [routines, setRoutines] = useState<Routine[]>(initialRoutines);
   const [deletingId, setDeletingId] = useState<number | null>(null);
-  const { getToken } = useAuth();
   const router = useRouter();
   const { selectedSede } = useStore();
   const queryClient = useQueryClient();
@@ -58,9 +56,8 @@ const AdminRoutineTable = ({
 
   const { mutate: deleteRoutine, isPending: isDeleting } = useMutation({
     mutationFn: async (id: number) => {
-      const token = await getToken();
       setDeletingId(id);
-      await routineService.deleteRoutine(id, token);
+      await routineService.deleteRoutine(id);
     },
     onMutate: async (deletedId) => {
       // Optimistically remove the routine from the UI

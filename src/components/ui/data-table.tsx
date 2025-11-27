@@ -33,6 +33,7 @@ interface DataTableProps<TData, TValue> {
   headerClassName?: string;
   searchPlaceholder?: string;
   globalFilter?: boolean;
+  getRowClassName?: (row: TData) => string;
 }
 
 export function DataTable<TData extends { id: string | number }, TValue>({
@@ -43,6 +44,7 @@ export function DataTable<TData extends { id: string | number }, TValue>({
   headerClassName,
   searchPlaceholder = "Buscar...",
   globalFilter = true,
+  getRowClassName,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -116,6 +118,7 @@ export function DataTable<TData extends { id: string | number }, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  className={getRowClassName?.(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id} className="px-4 py-2">

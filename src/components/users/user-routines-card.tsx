@@ -65,7 +65,6 @@ const useIsMobile = (query = "(max-width: 640px)") => {
 const UserRoutinesCard = ({ user }: UserRoutinesCardProps) => {
   const isMobile = useIsMobile();
   const { id: userId, sedeId } = user;
-  const { getToken } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: routines = [], isLoading: isLoadingRoutines } = useQuery<
@@ -73,11 +72,7 @@ const UserRoutinesCard = ({ user }: UserRoutinesCardProps) => {
   >({
     queryKey: ["routines", sedeId],
     queryFn: async () => {
-      const token = await getToken();
-      const response = await apiService.get(
-        `/routines?sedeId=${sedeId}`,
-        token!
-      );
+      const response = await apiService.get(`/routines?sedeId=${sedeId}`);
 
       return response.items || [];
     },
@@ -86,8 +81,7 @@ const UserRoutinesCard = ({ user }: UserRoutinesCardProps) => {
 
   const { mutate: unassignRoutine } = useMutation({
     mutationFn: async (id: number) => {
-      const token = await getToken();
-      await routineService.unassignRoutine(userId, id, token!);
+      await routineService.unassignRoutine(userId, id);
     },
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ["routines"] });

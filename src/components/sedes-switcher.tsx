@@ -34,7 +34,6 @@ export function SedesSwitcher({ isAdmin }: { isAdmin: boolean }) {
   const { selectedSede, setSelectedSede } = useStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { getToken } = useAuth();
   const { userId } = useAuth();
   const { user } = useClerk();
   const queryClient = useQueryClient();
@@ -54,8 +53,7 @@ export function SedesSwitcher({ isAdmin }: { isAdmin: boolean }) {
 
   const handleCreateSede = async (values: SedeFormValues) => {
     try {
-      const token = await getToken();
-      await apiService.post("/admin/sedes", values, token!);
+      await apiService.post("/admin/sedes", values);
       toast.success("Sede creada correctamente");
       setIsModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ["sedes"] });

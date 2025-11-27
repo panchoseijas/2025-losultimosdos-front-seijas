@@ -1,23 +1,37 @@
 "use client";
+
 import { useState } from "react";
-import { ClassForm } from "../forms/class";
+import { ClassForm, type ClassFormValues } from "../forms/class";
 import { Button } from "../ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
-import { type GymClass } from "@/types";
 import apiService from "@/services/api.service";
-import { useAuth } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
 
-const CreateClassSheet = () => {
+interface CreateClassSheetProps {
+  onCreated?: () => void;
+}
+
+const CreateClassSheet = ({ onCreated }: CreateClassSheetProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const { getToken } = useAuth();
-  const router = useRouter();
 
-  const onCreate = async (values: GymClass) => {
-    const token = await getToken();
-    if (!token) return;
-    await apiService.post(`/admin/class`, { ...values }, token!);
-    router.refresh();
+  // 👇 ahora usamos ClassFormValues, no GymClass
+  const onCreate = async (values: ClassFormValues) => {
+    // armamos el payload que el back espera
+    const payload = {
+      name: values.name,
+      description: values.description,
+      date: values.date.toISOString(), // el back hace Date.parse(date)
+      time: values.time,
+      capacity: values.capacity,
+      sedeId: values.sedeId,
+      isBoostedForPoints: values.isBoostedForPoints,
+    };
+
+    await apiService.post(`/admin/class`, payload);
+
+    // avisamos a la página que hay una nueva clase
+    onCreated?.();
+
+    // cerramos el sheet
     setIsOpen(false);
   };
 

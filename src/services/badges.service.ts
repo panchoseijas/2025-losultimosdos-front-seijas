@@ -3,16 +3,13 @@ import apiService from "./api.service";
 import { UserBadgeStatus } from "@/types";
 
 class BadgeService {
-  async getUserBadges(token: string | null): Promise<UserBadgeStatus[]> {
-    if (!token) throw new Error("No auth token");
-    const data = await apiService.get("/user/badges", token);
+  async getUserBadges(): Promise<UserBadgeStatus[]> {
+    const data = await apiService.get("/user/badges");
     return (data.items ?? []) as UserBadgeStatus[];
   }
 
-  // NUEVO: llama al endpoint que evalúa y devuelve los nuevos
-  async evaluateBadges(token: string | null): Promise<UserBadgeStatus[]> {
-    if (!token) throw new Error("No auth token");
-    const data = await apiService.post("/user/badges/evaluate", {}, token);
+  async evaluateBadges(): Promise<UserBadgeStatus[]> {
+    const data = await apiService.post("/user/badges/evaluate", {});
     return (data.items ?? []) as UserBadgeStatus[];
   }
 }

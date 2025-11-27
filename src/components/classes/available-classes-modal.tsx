@@ -23,17 +23,11 @@ interface AvailableClassesModalProps {
 
 const AvailableClassesModal = ({ user }: AvailableClassesModalProps) => {
   const [open, setOpen] = useState(false);
-  const { getToken } = useAuth();
   const { id: userId, sedeId } = user;
   const { data: availableClasses = [], isLoading } = useQuery({
     queryKey: ["classes", sedeId],
     queryFn: async () => {
-      const token = await getToken();
-
-      const response = await apiService.get(
-        `/classes?sedeId=${sedeId}`,
-        token!
-      );
+      const response = await apiService.get(`/classes?sedeId=${sedeId}`);
       return response.classes || [];
     },
     enabled: open,
