@@ -42,12 +42,23 @@ export function SedesSwitcher({ isAdmin }: { isAdmin: boolean }) {
     enabled: !!userId,
     queryFn: async () => {
       const data = await apiService.get("/sedes");
-      setSelectedSede(
-        data.sedes.find(
-          (sede: Sede) => sede.id === Number(user?.publicMetadata.sede)
-        )
+      const fetchedSedes = data.sedes as Sede[];
+
+      // Only set sede from user metadata if no valid sede is persisted
+      const persistedSedeExists = fetchedSedes.some(
+        (sede: Sede) => sede.id === selectedSede?.id
       );
-      return data.sedes as Sede[];
+
+      if (!persistedSedeExists) {
+        const userSede = fetchedSedes.find(
+          (sede: Sede) => sede.id === Number(user?.publicMetadata.sede)
+        );
+        if (userSede) {
+          setSelectedSede(userSede);
+        }
+      }
+
+      return fetchedSedes;
     },
   });
 
