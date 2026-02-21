@@ -27,7 +27,7 @@ export interface User {
 
 export interface ApiKey {
   id: string;
-  key: string;
+  key?: string;
   isActive: boolean;
   createdAt: string;
   lastUsed?: string;

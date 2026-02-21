@@ -48,12 +48,13 @@ export class ApiService {
       body: JSON.stringify(body),
       headers,
     });
+
     if (response.status >= 500) {
       console.log(response.body, response.status);
       throw new Error("Server error");
     } else if (response.status >= 400) {
       const { error, details } = await response.json();
-
+      console.log("error", error, details);
       throw new ApiValidationError(details, response.status);
     }
     const data = await response.json();
@@ -101,13 +102,12 @@ export class ApiService {
       body: JSON.stringify(body),
       headers,
     });
-
     if (response.status >= 500) {
       console.log(response.body, response.status);
       throw new Error("Server error");
     } else if (response.status >= 400) {
       const { error, details } = await response.json();
-      console.log("error", error, details);
+
       throw new ApiValidationError(details, response.status);
     }
     const data = await response.json();

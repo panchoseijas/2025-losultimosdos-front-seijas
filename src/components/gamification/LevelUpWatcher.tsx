@@ -2,29 +2,15 @@
 
 import { useAuth } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMyGamification } from "@/hooks/use-my-gamification";
 import { getLevelForPoints, LevelConfig } from "@/lib/levels";
 import { LevelUpModal } from "@/components/gamification/levelUpModal";
-
-const COOKIE_NAME = "gymcloud_levelup_shown";
-const COOKIE_DAYS = 365;
-
-const getShownLevelFromCookie = (userId: string): number | null => {
-  const cookies = document.cookie.split("; ");
-  const cookie = cookies.find((c) => c.startsWith(`${COOKIE_NAME}_${userId}=`));
-  if (!cookie) return null;
-  const value = parseInt(cookie.split("=")[1], 10);
-  return isNaN(value) ? null : value;
-};
-
-const setShownLevelCookie = (userId: string, level: number): void => {
-  const expires = new Date();
-  expires.setDate(expires.getDate() + COOKIE_DAYS);
-  document.cookie = `${COOKIE_NAME}_${userId}=${level}; expires=${expires.toUTCString()}; path=/`;
-};
+import gamificationService from "@/services/gamification.service";
 
 export function LevelUpWatcher() {
   const { userId } = useAuth();
+  const queryClient = useQueryClient();
   const { totalPoints } = useMyGamification();
 
   const [open, setOpen] = useState(false);
@@ -32,25 +18,31 @@ export function LevelUpWatcher() {
 
   const { level } = getLevelForPoints(totalPoints);
 
+  const { data: levelStatus } = useQuery({
+    queryKey: ["levelStatus", userId],
+    queryFn: () => gamificationService.getLevelStatus(),
+    enabled: !!userId,
+  });
+
+  const { mutate: acknowledge } = useMutation({
+    mutationFn: (newLevel: number) =>
+      gamificationService.acknowledgeLevelUp(newLevel),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["levelStatus", userId] });
+    },
+  });
+
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || levelStatus == null) return;
 
     const currentLevel = level.level;
-    const lastShownLevel = getShownLevelFromCookie(userId);
+    const lastAcknowledged = levelStatus.lastAcknowledgedLevel;
 
-    // Only show modal if current level is higher than what we've shown before
-    if (lastShownLevel === null) {
-      // First time user - store current level without showing modal
-      setShownLevelCookie(userId, currentLevel);
-      return;
-    }
-
-    if (currentLevel > lastShownLevel) {
+    if (currentLevel > 1 && currentLevel > lastAcknowledged) {
       setLevelConfig(level);
       setOpen(true);
-      setShownLevelCookie(userId, currentLevel);
     }
-  }, [userId, level]);
+  }, [userId, level, levelStatus]);
 
   if (!userId || !levelConfig) return null;
 
@@ -60,7 +52,10 @@ export function LevelUpWatcher() {
       open={open}
       onClose={(o) => {
         setOpen(o);
-        if (!o) setLevelConfig(null);
+        if (!o) {
+          acknowledge(levelConfig.level);
+          setLevelConfig(null);
+        }
       }}
     />
   );
