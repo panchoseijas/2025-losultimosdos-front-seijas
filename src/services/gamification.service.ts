@@ -35,6 +35,13 @@ class GamificationService {
     const data = await this.api.get(url);
     return (data.items ?? []) as SedeLeaderboardItem[];
   }
+  async getLevelStatus(): Promise<{ lastAcknowledgedLevel: number }> {
+    return this.api.get("/gamification/level-status");
+  }
+
+  async acknowledgeLevelUp(level: number): Promise<void> {
+    await this.api.put("/gamification/acknowledge-level", { level });
+  }
 }
 
 export default new GamificationService();

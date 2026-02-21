@@ -10,6 +10,7 @@ import {
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { Toaster } from "react-hot-toast";
 import { redirect } from "next/navigation";
+import { SedesSwitcher } from "@/components/sedes-switcher";
 
 const AdminLayout = async ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = await auth();
@@ -31,6 +32,7 @@ const AdminLayout = async ({ children }: { children: React.ReactNode }) => {
               </div>
             </div>
             <div className="flex items-center gap-2 px-4">
+              <SedesSwitcher isAdmin={false} />
               <ModeToggle />
             </div>
           </div>

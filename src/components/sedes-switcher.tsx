@@ -44,14 +44,13 @@ export function SedesSwitcher({ isAdmin }: { isAdmin: boolean }) {
       const data = await apiService.get("/sedes");
       const fetchedSedes = data.sedes as Sede[];
 
-      // Only set sede from user metadata if no valid sede is persisted
       const persistedSedeExists = fetchedSedes.some(
-        (sede: Sede) => sede.id === selectedSede?.id
+        (sede: Sede) => sede.id === selectedSede?.id,
       );
 
       if (!persistedSedeExists) {
         const userSede = fetchedSedes.find(
-          (sede: Sede) => sede.id === Number(user?.publicMetadata.sede)
+          (sede: Sede) => sede.id === Number(user?.publicMetadata.sede),
         );
         if (userSede) {
           setSelectedSede(userSede);
@@ -157,8 +156,7 @@ export function SedesSwitcher({ isAdmin }: { isAdmin: boolean }) {
         ) : (
           <div className="flex items-center gap-2 rounded-md border border-border bg-muted/30 px-3 py-2">
             <Building2 className="h-4 w-4 text-muted-foreground" />
-            <div className="flex flex-col">
-              <span className="text-xs text-muted-foreground">Sede actual</span>
+            <div className="flex flex-col gap-1 text-left">
               <span className="text-sm font-medium">
                 {selectedSede?.name || "Sin sede asignada"}
               </span>
