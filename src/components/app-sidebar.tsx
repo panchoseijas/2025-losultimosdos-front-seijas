@@ -7,6 +7,7 @@ import {
   IconHome,
   IconTarget,
   IconKey,
+  IconNotebook,
 } from "@tabler/icons-react";
 import { Dumbbell, Trophy, Swords } from "lucide-react";
 
