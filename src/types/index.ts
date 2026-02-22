@@ -148,8 +148,64 @@ export interface Challenge {
   minLevel: number;
   sedeId?: number | null;
   isActive: boolean;
-  createdAt: string; // Date serializado
+  createdAt: string;
   updatedAt: string;
-  currentLevel: number; // viene del back
-  isCompleted: boolean; // viene del back
+  currentLevel: number;
+  isCompleted: boolean;
+}
+
+export type SessionStatus = "COMPLETED" | "PARTIAL" | "NOT_DONE";
+
+export interface WorkoutSession {
+  id: number;
+  userId: string;
+  routineId: number;
+  status: SessionStatus;
+  notes?: string | null;
+  createdAt: string;
+  routine?: { id: number; name: string; icon?: string | null };
+  performances?: WorkoutSetRecord[];
+}
+
+export interface WorkoutSetRecord {
+  id: number;
+  exerciseId: number;
+  setNumber: number;
+  reps: number;
+  weight: number;
+  comment?: string | null;
+  exercise?: Exercise;
+}
+
+export interface ExerciseProgressPoint {
+  date: string;
+  maxWeight: number;
+  totalVolume: number;
+  sets: number;
+}
+
+export interface WorkoutSessionCreatePayload {
+  routineId: number;
+  status: SessionStatus;
+  notes?: string;
+  performances: {
+    exerciseId: number;
+    sets: { reps: number; weight: number; comment?: string }[];
+  }[];
+}
+
+export interface WorkoutSessionCreateResponse {
+  session: WorkoutSession;
+  pointsAwarded: number;
+  completionRatio: number;
+  completedCount: number;
+  totalExercises: number;
+}
+
+export interface WorkoutSessionListResponse {
+  sessions: WorkoutSession[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
