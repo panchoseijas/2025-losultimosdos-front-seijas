@@ -215,6 +215,18 @@ const PieChartAllSedes = () => {
   const id = "routines-users-pie-all-sedes";
   const [activeIndex, setActiveIndex] = useState<number>(-1);
   const { selectedSede } = useStore();
+  const legendItems = [
+    {
+      key: "selected",
+      label: `Sede actual (${selectedSede.name})`,
+      color: "var(--chart-2)",
+    },
+    {
+      key: "others",
+      label: "Otras sedes",
+      color: "var(--chart-1)",
+    },
+  ];
 
   const {
     data: items = [],
@@ -322,79 +334,97 @@ const PieChartAllSedes = () => {
             Aún no hay usuarios asignados.
           </div>
         ) : (
-          <ChartContainer id={id} config={config} className="h-full w-full">
-            <PieChart>
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent hideLabel />}
-              />
-              <Pie
-                data={data}
-                dataKey="usersCount"
-                nameKey="sedeName"
-                innerRadius="55%"
-                strokeWidth={5}
-                onMouseEnter={(_, i) => setActiveIndex(i)}
-                onMouseLeave={() => setActiveIndex(-1)}
-                activeIndex={activeIndex >= 0 ? activeIndex : undefined}
-                activeShape={({
-                  outerRadius = 0,
-                  ...props
-                }: PieSectorDataItem) => (
-                  <g>
-                    <Sector {...props} outerRadius={outerRadius + 10} />
-                    <Sector
-                      {...props}
-                      outerRadius={outerRadius + 25}
-                      innerRadius={outerRadius + 12}
-                    />
-                  </g>
-                )}
-              >
-                <Label
-                  content={({ viewBox }) => {
-                    const idx = activeIndex >= 0 ? activeIndex : 0;
-                    if (!data[idx]) return null;
-                    if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                      const value = data[idx].usersCount;
-                      const name = data[idx].sedeName;
-                      return (
-                        <text
-                          x={viewBox.cx}
-                          y={viewBox.cy}
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                        >
-                          <tspan
+          <div className="h-full w-full">
+            <div
+              className="mb-2 flex items-center justify-center gap-4 text-xs text-muted-foreground"
+              role="list"
+              aria-label="Leyenda de colores por sede"
+            >
+              {legendItems.map((item) => (
+                <div key={item.key} className="flex items-center gap-2" role="listitem">
+                  <span
+                    className="inline-block h-2.5 w-2.5 rounded-full"
+                    style={{ backgroundColor: item.color }}
+                    aria-hidden="true"
+                  />
+                  <span>{item.label}</span>
+                </div>
+              ))}
+            </div>
+            <ChartContainer id={id} config={config} className="h-full w-full">
+              <PieChart>
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent hideLabel />}
+                />
+                <Pie
+                  data={data}
+                  dataKey="usersCount"
+                  nameKey="sedeName"
+                  innerRadius="55%"
+                  strokeWidth={5}
+                  onMouseEnter={(_, i) => setActiveIndex(i)}
+                  onMouseLeave={() => setActiveIndex(-1)}
+                  activeIndex={activeIndex >= 0 ? activeIndex : undefined}
+                  activeShape={({
+                    outerRadius = 0,
+                    ...props
+                  }: PieSectorDataItem) => (
+                    <g>
+                      <Sector {...props} outerRadius={outerRadius + 10} />
+                      <Sector
+                        {...props}
+                        outerRadius={outerRadius + 25}
+                        innerRadius={outerRadius + 12}
+                      />
+                    </g>
+                  )}
+                >
+                  <Label
+                    content={({ viewBox }) => {
+                      const idx = activeIndex >= 0 ? activeIndex : 0;
+                      if (!data[idx]) return null;
+                      if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                        const value = data[idx].usersCount;
+                        const name = data[idx].sedeName;
+                        return (
+                          <text
                             x={viewBox.cx}
                             y={viewBox.cy}
-                            className="fill-foreground text-3xl font-bold"
+                            textAnchor="middle"
+                            dominantBaseline="middle"
                           >
-                            {value.toLocaleString()}
-                          </tspan>
-                          <tspan
-                            x={viewBox.cx}
-                            y={(viewBox.cy || 0) + 18}
-                            className="fill-muted-foreground text-xs"
-                          >
-                            Usuarios
-                          </tspan>
-                          <tspan
-                            x={viewBox.cx}
-                            y={(viewBox.cy || 0) + 36}
-                            className="fill-muted-foreground text-[10px]"
-                          >
-                            {name}
-                          </tspan>
-                        </text>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-              </Pie>
-            </PieChart>
-          </ChartContainer>
+                            <tspan
+                              x={viewBox.cx}
+                              y={viewBox.cy}
+                              className="fill-foreground text-3xl font-bold"
+                            >
+                              {value.toLocaleString()}
+                            </tspan>
+                            <tspan
+                              x={viewBox.cx}
+                              y={(viewBox.cy || 0) + 18}
+                              className="fill-muted-foreground text-xs"
+                            >
+                              Usuarios
+                            </tspan>
+                            <tspan
+                              x={viewBox.cx}
+                              y={(viewBox.cy || 0) + 36}
+                              className="fill-muted-foreground text-[10px]"
+                            >
+                              {name}
+                            </tspan>
+                          </text>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                </Pie>
+              </PieChart>
+            </ChartContainer>
+          </div>
         )}
       </CardContent>
     </Card>

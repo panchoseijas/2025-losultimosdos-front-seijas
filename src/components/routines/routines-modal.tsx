@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Routine } from "@/types";
 import { Button } from "../ui/button";
@@ -9,7 +8,6 @@ import { Plus } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -27,6 +25,9 @@ const AvailableClassesModal = ({
   userId,
 }: AvailableClassesModalProps) => {
   const [open, setOpen] = useState(false);
+  const [assigningRoutineId, setAssigningRoutineId] = useState<
+    Routine["id"] | null
+  >(null);
   const queryClient = useQueryClient();
 
   const { mutate: assignRoutine, isPending: isAssigning } = useMutation({
@@ -61,6 +62,15 @@ const AvailableClassesModal = ({
     },
   });
 
+  const handleAssignRoutine = (routine: Routine) => {
+    setAssigningRoutineId(routine.id);
+    assignRoutine(routine, {
+      onSettled: () => {
+        setAssigningRoutineId(null);
+      },
+    });
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -77,27 +87,36 @@ const AvailableClassesModal = ({
           <div className="space-y-2">
             {routines
               .sort((a, b) => a.name.localeCompare(b.name))
-              .map((routine: Routine) => (
-                <div
-                  key={routine.id}
-                  className="flex items-center justify-between p-4 border dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
-                >
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900 dark:text-gray-100">
-                      {routine.name}
-                    </p>
+              .map((routine: Routine) => {
+                const isCurrentRoutineAssigning =
+                  isAssigning && assigningRoutineId === routine.id;
+
+                return (
+                  <div
+                    key={routine.id}
+                    className="flex items-center justify-between p-4 border dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
+                  >
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900 dark:text-gray-100">
+                        {routine.name}
+                      </p>
+                    </div>
+                    {routine.users?.includes(userId) ? (
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Asignada
+                      </p>
+                    ) : (
+                      <Button
+                        size="sm"
+                        onClick={() => handleAssignRoutine(routine)}
+                        disabled={isCurrentRoutineAssigning}
+                      >
+                        {isCurrentRoutineAssigning ? "Asignando..." : "Asignar"}
+                      </Button>
+                    )}
                   </div>
-                  {routine.users?.includes(userId) ? (
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Asignada
-                    </p>
-                  ) : (
-                    <Button size="sm" onClick={() => assignRoutine(routine)}>
-                      Asignar
-                    </Button>
-                  )}
-                </div>
-              ))}
+                );
+              })}
           </div>
         </div>
       </DialogContent>
