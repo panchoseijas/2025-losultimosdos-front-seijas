@@ -56,7 +56,7 @@ export const LEVELS: LevelConfig[] = [
   },
   {
     level: 5,
-    minPoints: 200,
+    minPoints: 100000,
     name: "Élite GymCloud",
     icon: "👑",
     colorClass: "bg-rose-600 text-white",

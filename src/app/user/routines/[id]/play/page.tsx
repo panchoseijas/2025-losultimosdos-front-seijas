@@ -57,6 +57,17 @@ type RoutineWithExercises = Routine & {
   exercises: (RoutineExercise & { exercise?: Exercise })[];
 };
 
+const createEmptySet = () => ({
+  weight: "",
+  reps: "",
+});
+
+const createDefaultExerciseEntry = (exerciseId: number) => ({
+  exerciseId,
+  sets: [createEmptySet()],
+  comment: "",
+});
+
 const deriveSessionStatus = (
   completedExerciseCount: number,
   totalExerciseCount: number,
@@ -119,7 +130,7 @@ const ExerciseCard = ({
     }
 
     lastAddSetAtRef.current = now;
-    append({ weight: "", reps: "" });
+    append(createEmptySet());
   };
 
   return (
@@ -194,6 +205,7 @@ const ExerciseCard = ({
                           aria-label={`Peso serie ${setIdx + 1}`}
                           className="text-sm"
                           {...field}
+                          value={field.value ?? ""}
                         />
                       </FormControl>
                       <FormMessage className="text-[10px]" />
@@ -214,6 +226,7 @@ const ExerciseCard = ({
                           aria-label={`Repeticiones serie ${setIdx + 1}`}
                           className="text-sm"
                           {...field}
+                          value={field.value ?? ""}
                         />
                       </FormControl>
                       <FormMessage className="text-[10px]" />
@@ -269,6 +282,7 @@ const ExerciseCard = ({
                   aria-label="Comentario del ejercicio"
                   className="text-sm"
                   {...field}
+                  value={field.value ?? ""}
                 />
               </FormControl>
             </FormItem>
@@ -315,24 +329,31 @@ export default function RoutinePlayPage({ params }: { params: Params }) {
     if (!routine) return;
 
     const currentExercises = form.getValues("exercises");
-    const hasValidExerciseIds =
+    const hasHydratedExercises =
       currentExercises.length === routine.exercises.length &&
       currentExercises.every(
-        (exercise) =>
+        (exercise, index) =>
           typeof exercise?.exerciseId === "number" &&
-          Number.isFinite(exercise.exerciseId),
+          Number.isFinite(exercise.exerciseId) &&
+          exercise.exerciseId === routine.exercises[index]?.exerciseId &&
+          Array.isArray(exercise.sets) &&
+          exercise.sets.length >= 1 &&
+          exercise.sets.every(
+            (set) =>
+              typeof set?.weight === "string" &&
+              typeof set?.reps === "string",
+          ) &&
+          typeof exercise.comment === "string",
       );
 
-    if (hasValidExerciseIds) return;
+    if (hasHydratedExercises) return;
 
-    form.setValue(
-      "exercises",
-      routine.exercises.map((re) => ({
-        exerciseId: re.exerciseId,
-        sets: [{ weight: "", reps: "" }],
-        comment: "",
-      })),
-    );
+    form.reset({
+      notes: form.getValues("notes") ?? "",
+      exercises: routine.exercises.map((re) =>
+        createDefaultExerciseEntry(re.exerciseId),
+      ),
+    });
   }, [routine, form]);
 
   const watchedExercises = form.watch("exercises");
@@ -521,6 +542,7 @@ export default function RoutinePlayPage({ params }: { params: Params }) {
                       className="text-sm"
                       aria-label="Notas de la sesion"
                       {...field}
+                      value={field.value ?? ""}
                     />
                   </FormControl>
                   <FormMessage />
