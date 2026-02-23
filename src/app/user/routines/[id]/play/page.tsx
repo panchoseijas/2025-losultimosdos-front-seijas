@@ -54,7 +54,7 @@ type RoutineWithExercises = Routine & {
 
 const deriveSessionStatus = (
   completedExerciseCount: number,
-  totalExerciseCount: number
+  totalExerciseCount: number,
 ): SessionStatus => {
   if (completedExerciseCount === 0) return "NOT_DONE";
   if (completedExerciseCount >= totalExerciseCount) return "COMPLETED";
@@ -79,7 +79,11 @@ const ExerciseCard = ({
 }: ExerciseCardProps) => {
   const form = useFormContext<WorkoutSessionFormValues>();
 
-  const { fields: setFields, append, remove } = useFieldArray({
+  const {
+    fields: setFields,
+    append,
+    remove,
+  } = useFieldArray({
     control: form.control,
     name: `exercises.${exerciseIndex}.sets`,
   });
@@ -96,7 +100,7 @@ const ExerciseCard = ({
       const rm = calc1RM(w, r);
       return rm > acc.rm ? { rm, weight: w, reps: r } : acc;
     },
-    { rm: 0, weight: 0, reps: 0 }
+    { rm: 0, weight: 0, reps: 0 },
   );
 
   const isPR = bestSetToday && bestSetToday.rm > 0 && bestSetToday.rm > best1RM;
@@ -107,8 +111,7 @@ const ExerciseCard = ({
       className={cn(
         "transition-all border border-border",
         hasSets && "border-green-500/80 bg-green-50/40 dark:bg-green-950/20",
-        isPR &&
-          "border-emerald-500/90 shadow-[0_0_15px_rgba(16,185,129,0.6)]"
+        isPR && "border-emerald-500/90 shadow-[0_0_15px_rgba(16,185,129,0.6)]",
       )}
     >
       <CardHeader className="pb-2">
@@ -139,8 +142,8 @@ const ExerciseCard = ({
             </div>
             {best ? (
               <div className="text-sm">
-                <span className="font-semibold">{best.weight} kg</span>{" "}
-                · {best.reps} reps
+                <span className="font-semibold">{best.weight} kg</span> ·{" "}
+                {best.reps} reps
                 {best1RM > 0 && (
                   <div className="text-[11px] text-muted-foreground">
                     1RM: {best1RM.toFixed(1)} kg
@@ -281,7 +284,6 @@ export default function RoutinePlayPage({ params }: { params: Params }) {
 
   const { data: bestPerformances = [], isLoading: isBestLoading } =
     useBestPerformances(routineId);
-
   const { mutateAsync: createSession, isPending: isSaving } =
     useCreateWorkoutSession();
 
@@ -305,7 +307,7 @@ export default function RoutinePlayPage({ params }: { params: Params }) {
         exerciseId: re.exerciseId,
         sets: [{ weight: "", reps: "" }],
         comment: "",
-      }))
+      })),
     );
   }, [routine, form]);
 
@@ -327,7 +329,7 @@ export default function RoutinePlayPage({ params }: { params: Params }) {
 
     const status = deriveSessionStatus(
       performances.length,
-      values.exercises.length
+      values.exercises.length,
     );
 
     const data = await createSession({
@@ -370,14 +372,14 @@ export default function RoutinePlayPage({ params }: { params: Params }) {
   }
 
   const exercisesWithSets = watchedExercises.filter((ex) =>
-    ex.sets.some((s) => s.weight !== "" && s.reps !== "")
+    ex.sets.some((s) => s.weight !== "" && s.reps !== ""),
   );
   const total = routine.exercises.length;
   const completedCount = exercisesWithSets.length;
   const progress = total ? Math.round((completedCount / total) * 100) : 0;
 
   const getBestForExercise = (
-    exerciseId: number
+    exerciseId: number,
   ): BestPerformance | undefined =>
     bestPerformances.find((b) => b.exerciseId === exerciseId);
 
@@ -392,7 +394,7 @@ export default function RoutinePlayPage({ params }: { params: Params }) {
           className={cn(
             "relative overflow-hidden border bg-background",
             isLegendOrHigher &&
-              "border-transparent bg-[radial-gradient(circle_at_top,_#a855f733,_transparent_55%),_radial-gradient(circle_at_bottom,_#ec489933,_transparent_55%)] before:absolute before:inset-0 before:-z-10 before:bg-[conic-gradient(at_top,_#a855f7,_#ec4899,_#f97316,_#a855f7)] before:opacity-60 before:animate-[spin_10s_linear_infinite]"
+              "border-transparent bg-[radial-gradient(circle_at_top,_#a855f733,_transparent_55%),_radial-gradient(circle_at_bottom,_#ec489933,_transparent_55%)] before:absolute before:inset-0 before:-z-10 before:bg-[conic-gradient(at_top,_#a855f7,_#ec4899,_#f97316,_#a855f7)] before:opacity-60 before:animate-[spin_10s_linear_infinite]",
           )}
         >
           <CardHeader>
@@ -433,8 +435,8 @@ export default function RoutinePlayPage({ params }: { params: Params }) {
               Ejercicios de hoy
             </CardTitle>
             <CardDescription>
-              Para cada ejercicio, agrega las series que hagas. Si es la
-              primera vez, la mejor historica aparece como <strong>-</strong>.
+              Para cada ejercicio, agrega las series que hagas. Si es la primera
+              vez, la mejor historica aparece como <strong>-</strong>.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -446,7 +448,6 @@ export default function RoutinePlayPage({ params }: { params: Params }) {
                 best={getBestForExercise(re.exerciseId)}
               />
             ))}
-
           </CardContent>
         </Card>
 

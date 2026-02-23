@@ -1,45 +1,68 @@
 "use client";
 
-import { use } from "react";
+import { useMemo } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import routineService from "@/services/routine.service";
-import {
-  Exercise,
-  RoutineExercise,
-} from "@/types";
+import { Exercise, RoutineExercise } from "@/types";
 import {
   IconBarbell,
   IconClock,
   IconHistory,
   IconChartLine,
+  IconArrowLeft,
 } from "@tabler/icons-react";
-import { useWorkoutSessions } from "@/hooks/use-workout-sessions";
 import { ExerciseProgressChart } from "@/components/progress/exercise-progress-chart";
 import HistorySessionCard from "@/components/progress/history-session-card";
+import { useAdminUserWorkoutSessions } from "@/hooks/use-admin-user-routine-data";
 
-type Params = Promise<{ id: string }>;
+const AdminUserRoutineDetailsPage = () => {
+  const params = useParams();
+  const userId = params.id as string;
+  const routineIdParam = params.routineId as string;
+  const routineId = Number(routineIdParam);
 
-export default function RoutineDetailsPage({ params }: { params: Params }) {
-  const id = use(params).id;
-  const routineId = Number(id);
+  const hasValidParams = !!userId && !Number.isNaN(routineId);
 
   const {
     data: routine,
-    isLoading,
-    error,
+    isLoading: isRoutineLoading,
+    error: routineError,
   } = useQuery({
-    queryKey: ["routine", id],
+    queryKey: ["admin", "routine", userId, routineId],
+    enabled: hasValidParams,
     queryFn: () => routineService.getRoutine(routineId),
   });
 
   const { data: sessionsData, isLoading: isSessionsLoading } =
-    useWorkoutSessions({ routineId });
+    useAdminUserWorkoutSessions(userId, { routineId }, hasValidParams);
 
-  if (isLoading) {
+  const exercises = useMemo(
+    () =>
+      ((routine?.exercises as (RoutineExercise & { exercise?: Exercise })[]) ??
+        []),
+    [routine]
+  );
+
+  if (!hasValidParams) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <div className="text-center text-red-500">
+            Parametros invalidos para la rutina del usuario.
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isRoutineLoading) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-12 w-[250px]" />
@@ -49,13 +72,12 @@ export default function RoutineDetailsPage({ params }: { params: Params }) {
     );
   }
 
-  if (error) {
+  if (routineError) {
     return (
       <Card>
         <CardContent className="pt-6">
           <div className="text-center text-red-500">
-            Error al cargar los detalles de la rutina. Intenta nuevamente mas
-            tarde.
+            Error al cargar los detalles de la rutina del usuario.
           </div>
         </CardContent>
       </Card>
@@ -72,12 +94,17 @@ export default function RoutineDetailsPage({ params }: { params: Params }) {
     );
   }
 
-  const exercises = routine.exercises as (RoutineExercise & {
-    exercise?: Exercise;
-  })[];
-
   return (
     <div className="space-y-6">
+      <div>
+        <Button asChild variant="outline" size="sm" className="gap-2">
+          <Link href={`/admin/user/${userId}`} aria-label="Volver al usuario">
+            <IconArrowLeft size={16} />
+            Volver al usuario
+          </Link>
+        </Button>
+      </div>
+
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -177,8 +204,8 @@ export default function RoutineDetailsPage({ params }: { params: Params }) {
         <TabsContent value="history">
           {isSessionsLoading ? (
             <div className="space-y-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-20 w-full" />
+              {Array.from({ length: 3 }).map((_, index) => (
+                <Skeleton key={index} className="h-20 w-full" />
               ))}
             </div>
           ) : !sessionsData || sessionsData.sessions.length === 0 ? (
@@ -212,6 +239,7 @@ export default function RoutineDetailsPage({ params }: { params: Params }) {
               {exercises.map((exercise) => (
                 <ExerciseProgressChart
                   key={exercise.exerciseId}
+                  userId={userId}
                   exerciseId={exercise.exerciseId}
                   exerciseName={exercise.exercise?.name ?? "Ejercicio"}
                 />
@@ -222,4 +250,6 @@ export default function RoutineDetailsPage({ params }: { params: Params }) {
       </Tabs>
     </div>
   );
-}
+};
+
+export default AdminUserRoutineDetailsPage;

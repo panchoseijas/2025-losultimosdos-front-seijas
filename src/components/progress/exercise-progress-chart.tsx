@@ -17,10 +17,12 @@ import {
 } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useExerciseProgress } from "@/hooks/use-exercise-progress";
+import { useAdminUserExerciseProgress } from "@/hooks/use-admin-user-routine-data";
 
 type ExerciseProgressChartProps = {
   exerciseId: number;
   exerciseName: string;
+  userId?: string;
 };
 
 const chartConfig: ChartConfig = {
@@ -37,8 +39,23 @@ const chartConfig: ChartConfig = {
 export const ExerciseProgressChart = ({
   exerciseId,
   exerciseName,
+  userId,
 }: ExerciseProgressChartProps) => {
-  const { data: progress, isLoading } = useExerciseProgress(exerciseId);
+  const {
+    data: ownProgress,
+    isLoading: isOwnProgressLoading,
+    isFetching: isOwnProgressFetching,
+  } = useExerciseProgress(exerciseId, !userId);
+  const {
+    data: adminProgress,
+    isLoading: isAdminProgressLoading,
+    isFetching: isAdminProgressFetching,
+  } = useAdminUserExerciseProgress(userId ?? "", exerciseId);
+
+  const progress = userId ? adminProgress : ownProgress;
+  const isLoading = userId
+    ? isAdminProgressLoading || isAdminProgressFetching
+    : isOwnProgressLoading || isOwnProgressFetching;
 
   const chartData = useMemo(() => {
     if (!progress || progress.length === 0) return [];

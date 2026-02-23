@@ -42,6 +42,7 @@ export const useCreateWorkoutSession = () => {
       queryClient.invalidateQueries({ queryKey: ["workoutSessions"] });
       queryClient.invalidateQueries({ queryKey: ["userRoutines", userId] });
       queryClient.invalidateQueries({ queryKey: ["bestPerformances"] });
+      queryClient.invalidateQueries({ queryKey: ["exerciseProgress"] });
       queryClient.invalidateQueries({ queryKey: ["userBadges", userId] });
       queryClient.invalidateQueries({
         queryKey: [

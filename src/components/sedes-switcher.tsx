@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Building2, Check, ChevronsUpDown, PlusCircle } from "lucide-react";
 import { Separator } from "./ui/separator";
 import {
@@ -27,39 +27,59 @@ import { Sede } from "@/types";
 import { Skeleton } from "./ui/skeleton";
 import { SedeForm, SedeFormValues } from "./forms/sede";
 import toast from "react-hot-toast";
-import { useAuth, useClerk } from "@clerk/nextjs";
-import { useUser } from "@/hooks/use-user";
+import { useAuth, useUser } from "@clerk/nextjs";
 
 export function SedesSwitcher({ isAdmin }: { isAdmin: boolean }) {
   const { selectedSede, setSelectedSede } = useStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { userId } = useAuth();
-  const { user } = useClerk();
+  const { user } = useUser();
   const queryClient = useQueryClient();
   const { data: sedes, isLoading } = useQuery({
     queryKey: ["sedes"],
     enabled: !!userId,
     queryFn: async () => {
       const data = await apiService.get("/sedes");
-      const fetchedSedes = data.sedes as Sede[];
-
-      const persistedSedeExists = fetchedSedes.some(
-        (sede: Sede) => sede.id === selectedSede?.id,
-      );
-
-      if (!persistedSedeExists) {
-        const userSede = fetchedSedes.find(
-          (sede: Sede) => sede.id === Number(user?.publicMetadata.sede),
-        );
-        if (userSede) {
-          setSelectedSede(userSede);
-        }
-      }
-
-      return fetchedSedes;
+      return data.sedes as Sede[];
     },
   });
+
+  useEffect(() => {
+    if (!sedes || sedes.length === 0) return;
+
+    const userSedeId = Number(user?.publicMetadata?.sede);
+    const userSede = Number.isNaN(userSedeId)
+      ? undefined
+      : sedes.find((sede: Sede) => sede.id === userSedeId);
+
+    // Users should always be locked to their assigned sede.
+    if (!isAdmin) {
+      if (userSede && selectedSede?.id !== userSede.id) {
+        setSelectedSede(userSede);
+      }
+      return;
+    }
+
+    const persistedSedeExists = sedes.some(
+      (sede: Sede) => sede.id === selectedSede?.id,
+    );
+
+    if (persistedSedeExists) return;
+
+    if (userSede) {
+      setSelectedSede(userSede);
+      return;
+    }
+
+    setSelectedSede(sedes[0]);
+  }, [
+    isAdmin,
+    sedes,
+    selectedSede?.id,
+    setSelectedSede,
+    user?.publicMetadata?.sede,
+  ]);
 
   const handleCreateSede = async (values: SedeFormValues) => {
     try {
@@ -108,7 +128,7 @@ export function SedesSwitcher({ isAdmin }: { isAdmin: boolean }) {
               >
                 <div className="flex items-center gap-2">
                   <Building2 className="h-4 w-4 opacity-70" />
-                  <span className="font-medium">
+                  <span className="font-medium whitespace-nowrap">
                     {selectedSede?.name || "Seleccionar sede"}
                   </span>
                 </div>
@@ -157,7 +177,7 @@ export function SedesSwitcher({ isAdmin }: { isAdmin: boolean }) {
           <div className="flex items-center gap-2 rounded-md border border-border bg-muted/30 px-3 py-2">
             <Building2 className="h-4 w-4 text-muted-foreground" />
             <div className="flex flex-col gap-1 text-left">
-              <span className="text-sm font-medium">
+              <span className="text-sm font-medium whitespace-nowrap">
                 {selectedSede?.name || "Sin sede asignada"}
               </span>
             </div>
