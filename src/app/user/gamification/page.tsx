@@ -101,7 +101,7 @@ const LEVELS_INFO: LevelInfo[] = [
     level: 5,
     name: "Élite GymCloud",
     icon: "👑",
-    minPoints: 200,
+    minPoints: 100000,
     multiplier: "+30% todo",
   },
 ];
