@@ -1,9 +1,13 @@
 "use client";
 
-import { use, useEffect } from "react";
+import { use, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { useForm, useFieldArray, useFormContext } from "react-hook-form";
+import {
+  useForm,
+  useFieldArray,
+  useFormContext,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import {
@@ -38,6 +42,7 @@ import toast from "react-hot-toast";
 import routineService, { BestPerformance } from "@/services/routine.service";
 import { useBestPerformances } from "@/hooks/use-best-performance";
 import { useCreateWorkoutSession } from "@/hooks/use-workout-sessions";
+import { ApiValidationError } from "@/services/api.service";
 import { TrainingMascot } from "@/components/routines/mascot/trainingMascot";
 import { useMyGamification } from "@/hooks/use-my-gamification";
 import { getLevelForPoints } from "@/lib/levels";
@@ -78,6 +83,7 @@ const ExerciseCard = ({
   best,
 }: ExerciseCardProps) => {
   const form = useFormContext<WorkoutSessionFormValues>();
+  const lastAddSetAtRef = useRef(0);
 
   const {
     fields: setFields,
@@ -105,6 +111,16 @@ const ExerciseCard = ({
 
   const isPR = bestSetToday && bestSetToday.rm > 0 && bestSetToday.rm > best1RM;
   const hasSets = watchedSets?.some((s) => s.weight !== "" && s.reps !== "");
+
+  const handleAddSet = () => {
+    const now = Date.now();
+    if (now - lastAddSetAtRef.current < 250) {
+      return;
+    }
+
+    lastAddSetAtRef.current = now;
+    append({ weight: "", reps: "" });
+  };
 
   return (
     <Card
@@ -225,7 +241,7 @@ const ExerciseCard = ({
           type="button"
           variant="outline"
           size="sm"
-          onClick={() => append({ weight: "", reps: "" })}
+          onClick={handleAddSet}
           className="text-xs"
           aria-label="Agregar serie"
         >
@@ -299,7 +315,15 @@ export default function RoutinePlayPage({ params }: { params: Params }) {
     if (!routine) return;
 
     const currentExercises = form.getValues("exercises");
-    if (currentExercises.length > 0) return;
+    const hasValidExerciseIds =
+      currentExercises.length === routine.exercises.length &&
+      currentExercises.every(
+        (exercise) =>
+          typeof exercise?.exerciseId === "number" &&
+          Number.isFinite(exercise.exerciseId),
+      );
+
+    if (hasValidExerciseIds) return;
 
     form.setValue(
       "exercises",
@@ -314,39 +338,71 @@ export default function RoutinePlayPage({ params }: { params: Params }) {
   const watchedExercises = form.watch("exercises");
 
   const handleSubmit = async (values: WorkoutSessionFormValues) => {
-    const performances = values.exercises
-      .map((ex) => ({
-        exerciseId: ex.exerciseId,
-        sets: ex.sets
-          .filter((s) => s.weight !== "" && s.reps !== "")
-          .map((s) => ({
-            weight: Number(s.weight),
-            reps: Number(s.reps),
-            comment: ex.comment || undefined,
-          })),
-      }))
-      .filter((p) => p.sets.length > 0);
+    try {
+      const performanceCandidates = values.exercises
+        .map((ex, exerciseIndex) => ({
+          // Fallback to routine order if form state was partially initialized.
+          exerciseId:
+            typeof ex.exerciseId === "number" && Number.isFinite(ex.exerciseId)
+              ? ex.exerciseId
+              : routine?.exercises?.[exerciseIndex]?.exerciseId,
+          sets: ex.sets
+            .filter((s) => s.weight !== "" && s.reps !== "")
+            .map((s) => ({
+              weight: Number(s.weight),
+              reps: Number(s.reps),
+              comment: ex.comment || undefined,
+            })),
+        }))
+        .filter((p) => p.sets.length > 0);
 
-    const status = deriveSessionStatus(
-      performances.length,
-      values.exercises.length,
-    );
+      const missingExerciseIdIndex = performanceCandidates.findIndex(
+        (performance) =>
+          typeof performance.exerciseId !== "number" ||
+          !Number.isFinite(performance.exerciseId),
+      );
+      if (missingExerciseIdIndex >= 0) {
+        toast.error("No se pudo guardar la sesion. Revisa los campos.");
+        return;
+      }
 
-    const data = await createSession({
-      routineId,
-      status,
-      notes: values.notes || undefined,
-      performances,
-    });
+      const performances = performanceCandidates.map((performance) => ({
+        exerciseId: performance.exerciseId as number,
+        sets: performance.sets,
+      }));
 
-    const pts = data.pointsAwarded ?? 0;
-    if (pts > 0) {
-      toast.success(`Sesion guardada. Ganaste ${pts} puntos!`);
-    } else {
-      toast.success("Sesion guardada.");
+      const status = deriveSessionStatus(
+        performances.length,
+        values.exercises.length,
+      );
+
+      const data = await createSession({
+        routineId,
+        status,
+        notes: values.notes || undefined,
+        performances,
+      });
+
+      const pts = data.pointsAwarded ?? 0;
+      if (pts > 0) {
+        toast.success(`Sesion guardada. Ganaste ${pts} puntos!`);
+      } else {
+        toast.success("Sesion guardada.");
+      }
+
+      router.push("/user/routines");
+    } catch (error) {
+      if (error instanceof ApiValidationError) {
+        toast.error("No se pudo guardar la sesion. Datos invalidos.");
+        return;
+      }
+
+      toast.error("No se pudo guardar la sesion. Intenta de nuevo.");
     }
+  };
 
-    router.push("/user/routines");
+  const handleInvalidSubmit = () => {
+    toast.error("No se pudo guardar la sesion. Revisa los campos.");
   };
 
   if (isRoutineLoading || isBestLoading) {
@@ -386,7 +442,7 @@ export default function RoutinePlayPage({ params }: { params: Params }) {
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(handleSubmit)}
+        onSubmit={form.handleSubmit(handleSubmit, handleInvalidSubmit)}
         className="space-y-6"
         noValidate
       >
@@ -452,17 +508,6 @@ export default function RoutinePlayPage({ params }: { params: Params }) {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Resumen de la sesion</CardTitle>
-            <CardDescription>
-              El estado se determina automaticamente:{" "}
-              {completedCount === 0
-                ? "No realizada"
-                : completedCount >= total
-                  ? "Completada"
-                  : `Parcial (${completedCount}/${total})`}
-            </CardDescription>
-          </CardHeader>
           <CardContent>
             <FormField
               control={form.control}
