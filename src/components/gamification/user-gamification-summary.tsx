@@ -54,14 +54,14 @@ export function UserGamificationSummary() {
   const { level, progressToNext, nextLevelPoints } =
     getLevelForPoints(totalPoints);
 
-  const isLegendOrHigher = level.level >= 4; // Nivel 4+ → borde animado
+  const isLegendOrHigher = level.level >= 4;
 
   return (
     <Card
       className={cn(
         "relative overflow-hidden border bg-background",
         isLegendOrHigher &&
-          "border-transparent bg-[radial-gradient(circle_at_top,_#a855f733,_transparent_55%),_radial-gradient(circle_at_bottom,_#ec489933,_transparent_55%)] before:absolute before:inset-0 before:-z-10 before:bg-[conic-gradient(at_top,_#a855f7,_#ec4899,_#f97316,_#a855f7)] before:opacity-60 before:animate-[spin_8s_linear_infinite]"
+          "border-transparent bg-[radial-gradient(circle_at_top,_#a855f733,_transparent_55%),_radial-gradient(circle_at_bottom,_#ec489933,_transparent_55%)] before:absolute before:inset-0 before:-z-10 before:bg-[conic-gradient(at_top,_#a855f7,_#ec4899,_#f97316,_#a855f7)] before:opacity-60 before:animate-[spin_8s_linear_infinite]",
       )}
     >
       <div className="absolute inset-0 pointer-events-none opacity-60 dark:opacity-40 bg-[radial-gradient(circle_at_top,_#3b82f620,_transparent_60%),_radial-gradient(circle_at_bottom,_#22c55e20,_transparent_60%)]" />
@@ -87,7 +87,7 @@ export function UserGamificationSummary() {
               className={cn(
                 "rounded-full p-[2px]",
                 isLegendOrHigher &&
-                  "bg-[conic-gradient(from_0deg,_#a855f7,_#ec4899,_#f97316,_#a855f7)] animate-[spin_10s_linear_infinite]"
+                  "bg-[conic-gradient(from_0deg,_#a855f7,_#ec4899,_#f97316,_#a855f7)] animate-[spin_10s_linear_infinite]",
               )}
             >
               <img
@@ -95,7 +95,7 @@ export function UserGamificationSummary() {
                 alt="Avatar"
                 className={cn(
                   "h-9 w-9 rounded-full border shadow-sm",
-                  isLegendOrHigher && "border-transparent"
+                  isLegendOrHigher && "border-transparent",
                 )}
               />
             </div>
@@ -111,7 +111,7 @@ export function UserGamificationSummary() {
                 "flex h-12 w-12 items-center justify-center rounded-full shadow-md",
                 level.colorClass,
                 isLegendOrHigher &&
-                  "ring-2 ring-offset-2 ring-offset-background ring-purple-400/80 animate-pulse"
+                  "ring-2 ring-offset-2 ring-offset-background ring-purple-400/80 animate-pulse",
               )}
             >
               <span className="text-2xl">{level.icon}</span>
@@ -128,7 +128,7 @@ export function UserGamificationSummary() {
                   variant="secondary"
                   className={cn(
                     "text-[10px] px-2 py-0.5 border-none",
-                    level.colorClass
+                    level.colorClass,
                   )}
                 >
                   {totalPoints.toLocaleString("es-AR")} pts

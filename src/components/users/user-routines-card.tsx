@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   Card,
   CardHeader,
@@ -148,6 +149,14 @@ const UserRoutinesCard = ({ user }: UserRoutinesCardProps) => {
                   {rt.exercises.length}
                 </div>
                 <div className="col-span-2 pt-2">
+                  <Link
+                    href={`/admin/user/${userId}/routines/${rt.id}`}
+                    className="w-full inline-flex items-center justify-center rounded-md border border-input bg-background px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+                  >
+                    Ver progreso
+                  </Link>
+                </div>
+                <div className="col-span-2 pt-2">
                   <Button
                     variant="destructive"
                     size="sm"
@@ -178,7 +187,9 @@ const UserRoutinesCard = ({ user }: UserRoutinesCardProps) => {
                   <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">
                     Duración
                   </th>
-                  <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400 " />
+                  <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">
+                    Acciones
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -206,14 +217,22 @@ const UserRoutinesCard = ({ user }: UserRoutinesCardProps) => {
                       {routine.duration} semanas
                     </td>
                     <td className="py-3 px-4 text-gray-600 dark:text-gray-300">
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="cursor-pointer w-24"
-                        onClick={() => unassignRoutine(routine.id)}
-                      >
-                        Desasignar
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/admin/user/${userId}/routines/${routine.id}`}
+                          className="inline-flex items-center justify-center rounded-md border border-input bg-background px-3 py-1.5 text-xs font-medium hover:bg-accent hover:text-accent-foreground"
+                        >
+                          Ver progreso
+                        </Link>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="cursor-pointer w-24"
+                          onClick={() => unassignRoutine(routine.id)}
+                        >
+                          Desasignar
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}

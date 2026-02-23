@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import ChartPiee from "@/components/dashboard/piechart";
 import { ChartBar } from "@/components/dashboard/barchart";
 import { ChartArea } from "@/components/dashboard/memberchart";
@@ -16,18 +16,39 @@ import { useStore } from "@/store/useStore";
 import userService from "@/services/user.service";
 
 type ViewKey = "members" | "classes" | "hours" | "routines";
+const DEFAULT_VIEW: ViewKey = "members";
+const VIEW_OPTIONS: ViewKey[] = ["members", "classes", "hours", "routines"];
+
+const getValidView = (value: string | null): ViewKey => {
+  if (value && VIEW_OPTIONS.includes(value as ViewKey)) {
+    return value as ViewKey;
+  }
+
+  return DEFAULT_VIEW;
+};
 
 const AdminPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const view = searchParams.get("view") as ViewKey;
+  const [activeView, setActiveView] = useState<ViewKey>(() =>
+    getValidView(searchParams.get("view"))
+  );
   const { selectedSede } = useStore();
+
   useEffect(() => {
-    if (!searchParams.get("view")) {
-      const params = new URLSearchParams(searchParams);
-      params.set("view", "members");
-      router.replace(`?${params.toString()}`);
+    const rawView = searchParams.get("view");
+    const nextView = getValidView(rawView);
+
+    if (rawView !== nextView) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("view", nextView);
+      router.replace(`?${params.toString()}`, { scroll: false });
+      return;
     }
+
+    setActiveView((previousView) =>
+      previousView === nextView ? previousView : nextView
+    );
   }, [searchParams, router]);
 
   const { data: busiestHourData, isLoading: isLoadingBusiestHour } = useQuery({
@@ -48,6 +69,9 @@ const AdminPage = () => {
       }
       return `${max.hour}:00`;
     },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const { data: topRoutineData, isLoading: isLoadingTopRoutine } = useQuery({
@@ -69,6 +93,9 @@ const AdminPage = () => {
       }
       return max.usersCount > 0 ? max.name : "Sin asignaciones";
     },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const { data: topClassData, isLoading: isLoadingTopClass } = useQuery({
@@ -94,6 +121,9 @@ const AdminPage = () => {
       }
       return max.enrollCount > 0 ? max.name : "Sin inscriptos";
     },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const { data: users, isLoading: isLoadingUsers } = useQuery({
@@ -102,6 +132,9 @@ const AdminPage = () => {
       const data = await userService.getAllUsersBySede(selectedSede.id);
       return data;
     },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const busiestHour = busiestHourData ?? "—";
@@ -116,7 +149,7 @@ const AdminPage = () => {
   };
 
   const renderChart = () => {
-    switch (view) {
+    switch (activeView) {
       case "members":
         return isLoadingUsers ? (
           <Skeleton className="h-full w-full" />
@@ -146,10 +179,15 @@ const AdminPage = () => {
     }
   };
 
-  const handleViewChange = (view: ViewKey) => {
-    const params = new URLSearchParams(searchParams);
-    params.set("view", view);
-    router.push(`?${params.toString()}`);
+  const handleViewChange = (nextView: ViewKey) => {
+    if (activeView === nextView) {
+      return;
+    }
+
+    setActiveView(nextView);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("view", nextView);
+    router.replace(`?${params.toString()}`, { scroll: false });
   };
 
   return (
@@ -160,7 +198,7 @@ const AdminPage = () => {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
-          active={view === "members"}
+          active={activeView === "members"}
           onClick={() => handleViewChange("members")}
           title="Usuarios"
           value={Intl.NumberFormat("es-AR").format(stats.totalMembers)}
@@ -175,7 +213,7 @@ const AdminPage = () => {
         />
 
         <KpiCard
-          active={view === "classes"}
+          active={activeView === "classes"}
           onClick={() => handleViewChange("classes")}
           title="Clases"
           value={topClassName}
@@ -184,7 +222,7 @@ const AdminPage = () => {
         />
 
         <KpiCard
-          active={view === "hours"}
+          active={activeView === "hours"}
           onClick={() => handleViewChange("hours")}
           title="Horarios"
           value={`Pico: ${busiestHour}`}
@@ -193,7 +231,7 @@ const AdminPage = () => {
         />
 
         <KpiCard
-          active={view === "routines"}
+          active={activeView === "routines"}
           onClick={() => handleViewChange("routines")}
           title="Rutinas"
           value={topRoutineName}
@@ -202,7 +240,7 @@ const AdminPage = () => {
         />
       </div>
 
-      {view === "routines" ? (
+      {activeView === "routines" ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-[420px]">
           {renderChart()}
         </div>
@@ -210,9 +248,9 @@ const AdminPage = () => {
         <div className="rounded-2xl border bg-background p-3 shadow-sm h-[420px] overflow-hidden">
           <div className="mb-2 flex items-center justify-between">
             <p className="text-sm font-medium text-muted-foreground">
-              {view === "members"
+              {activeView === "members"
                 ? "Socios (evolución)"
-                : view === "classes"
+                : activeView === "classes"
                 ? "Clases (asistencia)"
                 : "Ocupación por hora"}
             </p>
@@ -242,13 +280,14 @@ function KpiCard({
   isLoading?: boolean;
 }) {
   if (isLoading) {
-    return <Skeleton className="h-full w-full" />;
+    return <KpiCardSkeleton title={title} />;
   }
 
   return (
     <button
+      type="button"
       onClick={onClick}
-      className={`w-full rounded-xl border p-4 text-left transition-all hover:shadow-md ${
+      className={`w-full min-h-[148px] rounded-xl border p-4 text-left transition-all hover:shadow-md ${
         active ? "ring-2 ring-primary shadow-md" : "hover:bg-accent/40"
       }`}
     >
@@ -263,5 +302,19 @@ function KpiCard({
       )}
       <div className="mt-2 text-xs opacity-70">Ver detalle →</div>
     </button>
+  );
+}
+
+function KpiCardSkeleton({ title }: { title: string }) {
+  return (
+    <div className="w-full min-h-[148px] rounded-xl border p-4">
+      <div className="text-xs uppercase tracking-wide text-muted-foreground">
+        {title}
+      </div>
+      <Skeleton className="mt-2 h-8 w-3/4" />
+      <Skeleton className="mt-3 h-4 w-full" />
+      <Skeleton className="mt-1 h-4 w-5/6" />
+      <Skeleton className="mt-4 h-3 w-24" />
+    </div>
   );
 }

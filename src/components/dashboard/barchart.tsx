@@ -69,7 +69,7 @@ export function ChartBar() {
     isLoading: loading,
     error,
   } = useQuery({
-    queryKey: ["class-enrollments"],
+    queryKey: ["class-enrollments", selectedSede.id],
     queryFn: async () => {
       const items = await ClassService.getEnrollmentsCount(
         true,
@@ -82,6 +82,9 @@ export function ChartBar() {
             b.enrollCount - a.enrollCount || a.name.localeCompare(b.name)
         );
     },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const noClasses = !loading && !error && items.length === 0;
