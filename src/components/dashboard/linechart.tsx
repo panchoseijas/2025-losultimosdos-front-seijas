@@ -71,6 +71,9 @@ export function ChartLine() {
 
       return { chartData, sedes };
     },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const chartData = queryData?.chartData ?? [];

@@ -59,7 +59,9 @@ export function ChartArea() {
           new Date(a.date).getTime() - new Date(b.date).getTime()
       );
     },
-    // enabled: !!timeRange,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const filteredData = React.useMemo(() => {

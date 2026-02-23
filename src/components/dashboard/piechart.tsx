@@ -54,6 +54,9 @@ const PieChartSede = () => {
       const items = await RoutineService.getAllRoutinesUsersCount();
       return items;
     },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const data = useMemo(() => {
@@ -223,6 +226,9 @@ const PieChartAllSedes = () => {
       const items = await RoutineService.getAllRoutinesUsersCount();
       return items;
     },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const data = useMemo(() => {
