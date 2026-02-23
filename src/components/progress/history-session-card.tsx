@@ -58,9 +58,13 @@ const groupPerformancesByExercise = (
 
 const HistorySessionCard = ({ session }: { session: WorkoutSession }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const exerciseGroups = session.performances
+  type ExerciseGroupValue = {
+    exercise: WorkoutSetRecord["exercise"];
+    sets: WorkoutSetRecord[];
+  };
+  const exerciseGroups: Map<number, ExerciseGroupValue> = session.performances
     ? groupPerformancesByExercise(session.performances)
-    : new Map();
+    : new Map<number, ExerciseGroupValue>();
 
   const handleToggleExpanded = () => {
     setIsExpanded((current) => !current);
